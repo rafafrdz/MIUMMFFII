@@ -1,0 +1,35 @@
+*** Author: Adrián Riesco
+
+mod DIE-HARD is
+  protecting NAT .
+  sorts Jar JarSet .
+  subsort Jar < JarSet .
+
+  op jar : Nat Nat -> Jar [ctor] .   *** Capacity / Current content
+  op __ : JarSet JarSet -> JarSet [ctor assoc comm] .
+  
+  vars M1 N1 M2 N2 : Nat .
+
+  op initial : -> JarSet .   *** initial configuration
+  eq initial = jar(3, 0) jar(5, 0) jar(8,0) .
+
+  rl [empty] : jar(M1, N1) => jar(M1, 0) .
+  rl [fill] : jar(M1, N1) => jar(M1, M1) .
+  crl [transfer1] : jar(M1, N1) jar(M2, N2) => jar(M1, 0) jar(M2, N1 + N2)
+   if N1 + N2 <= M2 .
+  crl [transfer2] : jar(M1, N1) jar(M2, N2) => jar(M1, sd(N1 + N2, M2)) jar(M2, M2)
+   if N1 + N2 > M2 .
+endm
+
+mod INVARIANTE is
+  pr DIE-HARD .
+  var JS : JarSet .
+  var J : Jar .
+
+  op three : JarSet -> Bool .
+  eq three(JS) = numJars(JS) == 3 .
+
+  op numJars : JarSet -> Nat .
+  eq numJars(J JS) = 1 + numJars(JS) .
+  eq numJars(J) = 1 .
+endm
