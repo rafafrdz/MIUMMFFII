@@ -1,0 +1,282 @@
+\documentclass{article}
+
+% Language setting
+% Replace `english' with e.g. `spanish' to change the document language
+\usepackage[english]{babel}
+
+% Set page size and margins
+% Replace `letterpaper' with`a4paper' for UK/EU standard size
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{graphicx}
+\usepackage{stmaryrd}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{amssymb}
+\usepackage{ebproof}
+\newcommand{\rep}{\texttt{repeat $S$ until $b$ }}
+\newcommand{\for}{\texttt{for $x:=e_1$ to $e_2$ do $S$ }}
+\newcommand{\forp}{\texttt{for $x:=e_1 + 1$ to $e_2$ do $S$ }}
+\newcommand{\whl}{\texttt{$S$; while $\neg b$ do $S$}}
+\newcommand{\while}{\texttt{while $n>0$ do $(x:=2 * x;n:=n-1)$}}
+\newcommand{\whileneg}{\texttt{while $\neg b$ do $S$}}
+\newcommand{\qed}{\begin{flushright}\rule{0.7em}{0.7em}\end{flushright}}
+\newcommand{\sangle}[2]{\langle #1, #2 \rangle}
+\newcommand{\bigs}[3]{\sangle{#1}{#2}\Downarrow #3}
+\newcommand{\smalls}[3]{\sangle{#1}{#2} \longrightarrow #3}
+\newcommand{\bcal}{\mathcal{B}}
+\newcommand{\scal}{\mathcal{S}}
+\newcommand{\bool}[1]{\bcal \llbracket #1 \rrbracket}
+\newcommand{\sem}[1]{\llbracket #1 \rrbracket}
+\newcommand{\interval}{\textbf{Interval}}
+\newcommand{\var}{\textbf{Var}}
+\newcommand{\state}{\textbf{State}}
+\newcommand{\ztop}{\mathbb{Z}_{\bot}^{\top}}
+\newcommand{\zta}{\mathbb{Z}}
+\newcommand{\fs}[1]{f^{\sharp}_{#1}}
+\newcommand{\pl}{\oplus^{\sharp}}
+\newcommand{\tl}{\otimes^{\sharp}}
+\newcommand{\ml}{\ominus^{\sharp}}
+\newcommand{\sgs}{\sigma^{\sharp}}
+\newcommand{\seme}{\sem{e}}
+\newcommand{\ssem}{\seme^{\sharp}}
+\newcommand{\ssx}[1]{\sem{#1}^{\sharp}}
+
+
+\title{}
+\date{}
+\author{Rafael Fernández Ortiz}
+
+\begin{document}
+\maketitle
+
+\section*{Assignments 4}
+\begin{enumerate}
+\item Define an abstract function and a concretization function between \textbf{Interval} and $\mathbf{Z}_{\bot}^{\top}$
+\begin{align*}
+\alpha &: \interval \longrightarrow \ztop \\
+\gamma &: \ztop \longrightarrow \interval
+\end{align*}
+and prove that $(\interval, \alpha, \gamma, \ztop)$ is a Galois connection.
+\end{enumerate}\\
+\subsubsection*{Solution}
+%%% Definicion
+In order to prove that $(\interval, \alpha, \gamma, \ztop)$ is a Galois connection, we will define two function, $\alpha$ and $\sigma$, such that both are monotonically increasing and hold $\sigma \circ  \alpha \sqsupseteq id$ and $\alpha \circ  \sigma \sqsubseteq id$.\\
+
+\subsubsection*{Definition of $\alpha$ and $\gamma$}
+
+Let $int \in \interval$, $a, b \in \mathbf{Z} \cup \{-\infty, +\infty \}$ and $z \in \ztop$ be. Let us consider $\alpha : \interval \longrightarrow \ztop$ and $\gamma : \ztop \longrightarrow \interval$ two function. We define the abstract and the concretization function as follow:\\\\
+\begin{equation*}
+    \alpha = \lambda \; int. \left\{
+\begin{array}{ll}
+      & \text{if $int:= [a,b]$ with}\\
+      & \text{$a = b \; \land$}\\
+      a & \text{$a \neq - \infty \; \land$}\\
+      & \text{$b \neq + \infty$}\\
+      \\ \\
+        \bot   & \text{if $int = \bot$}\\
+      \\ \\
+      \top & \text{otherwise} \\
+\end{array} 
+\right.
+\end{equation*}
+\\
+and
+\\
+\begin{equation*}
+    \gamma = \lambda \; z. \left\{
+\begin{array}{ll}
+      [ z, z]   & \text{if $z \in \mathbb{Z}$}\\
+      \\ \\
+        \bot   & \text{if $z = \bot$}\\
+\\ \\
+       \left[- \infty , + \infty \right]  & \text{if $z = \top $}\\
+        
+\end{array} 
+\right.
+\end{equation*}\\
+
+\subsubsection*{Proof of $\alpha$ is monotonically increasing}
+In order to prove that $\alpha$ is monotonically increasing, we will see for two given intervals in $\interval$ which are related by $\sqsubseteq$ relationship, to apply $\alpha$ on both keep that relationship in the same way. \\
+
+Let us consider $int_1, int_2 \in \interval$ such that $int_1 \sqsubseteq int_2$. By definition, that mean there exist $a_1,a_2,b_1,b_2 \in \zta$ such that $int_1 = \left[ a_1, b_1\right]$ and $int_2 = \left[ a_2, b_2\right]$ with $a_2 \leq a_1$ and $b_1 \leq b_2$.\\\\
+ 
+\subsubsection*{Case $a_1 = b_1$}
+
+We can see if $a_1 = b_1$ then $\alpha (int_1) = a_1$. Let's see what append with $int_2$.
+\begin{itemize}
+    \item If $a_2 = b_2$, then $\alpha(int_2) = a_2$. We know that $int_1 \sqsubseteq int_2$, i.e. $a_2 \leq a_1$ and $b_1 \leq b_2$ with $a_1 = b_1$ and $a_2=b_2$, then $a_1 = a_2$. Therefore $a_1 = a_2$ \iff $a_1 \sqsubseteq a_2$ \iff $\alpha(int_1) \sqsubseteq \alpha(int_2)$.
+    \item If $a_2 < b_2$ or $a_1 = -\infty$ or $b_1 = +\infty$, then $\alpha(int_2) = \top$. Therefore, $a_1 \sqsubseteq \top \iff \alpha(int_1) \sqsubseteq \alpha(int_2)$ .
+\end{itemize}
+
+\subsubsection*{Case $a_1 < b_1$}
+
+We can see if $a_1 < b_1$ then $\alpha (int_1) = \top$ and we know that $int_1 \sqsubseteq int_2$, so $a_2, b_2$ are necessarily different. Therefore $\alpha (int_2) = \top$, then $\top \sqsubseteq \top \iff \alpha(int_1) \sqsubseteq \alpha(int_2)$
+
+\subsubsection*{Case $int_1 = \bot$}
+
+The case when $int_1 = \bot$ is trivial, because $\alpha(\bot) = \bot$ and  $\bot \sqsubseteq z$ for all $z \in \ztop$. In particular, $\top \sqsubseteq \alpha(int_2) \iff \alpha(int_1) \sqsubseteq \alpha(int_2)$.
+
+\subsubsection*{Proof of $\gamma$ is monotonically increasing}
+In order to prove that $\gamma$ is monotonically increasing, we will do in a similar way than the proof of $\alpha$. We will see for two given elements in $\ztop$ which are related by $\sqsubseteq$ relationship, to apply $\gamma$ on both keep that relationship in the same way. \\
+
+Let us consider $z_1, z_2 \in \ztop$ such that $z_1 \sqsubseteq z_2$. By definition, that mean $z1 = \bot$ or $z_1 = z_2$ or $z_2 = \top$.
+
+\begin{itemize}
+    \item If $z_1 = \bot$, then $\gamma(z_1) = \bot$. We know that $\bot \sqsubseteq int$ for all $int  \in \interval$, in particular $\bot \sqsubseteq \gamma(z_2) \iff \gamma(z_1) \sqsubseteq \gamma(z_2)$.
+    \item If $z_1 = \top$, then $z_2 = \top$. That mean that $\gamma(z_1) = \left[ -\infty, +\infty \right]$ and $\gamma(z_2) = \left[ -\infty, +\infty \right]$. Therefore, $\left[ -\infty, +\infty \right] \sqsubseteq \left[ -\infty, +\infty \right] \iff \gamma(z_1) \sqsubseteq \gamma(z_2)$. 
+    \item If $z_1 \in \zta$ such that $z_1 \sqsubseteq z_2$, then $z_2 = z_1$ or $z_2 = \top$.\\
+    In the first case, $z_2 = z_1$ then $\gamma(z_1) = [z_1,z_1] = [z_2,z_2] = \gamma(z_2) \iff \gamma(z_1) \sqsubseteq \gamma(z_2)$.\\
+    In the second one, $\gamma(z_2) = \left[ -\infty, +\infty \right]$. We know that $int \sqsubseteq \left[ -\infty, +\infty \right]$ for all $int \in \interval$, in particular $\gamma(z_1) \sqsubseteq \left[ -\infty, +\infty \right] \iff \gamma(z_1) \sqsubseteq \gamma(z_2)$.
+\end{itemize}
+\subsubsection*{Proof of $\gamma \circ \alpha \sqsupseteq id$}
+
+Let $int \in \interval$ and $a,b \in \zta$ be. We know that\\\\
+\begin{equation*}
+    \alpha(int) = \left\{
+\begin{array}{ll}
+      & \text{if $int:= [a,b]$ with}\\
+      & \text{$a = b \; \land$}\\
+      a & \text{$a \neq - \infty \; \land$}\\
+      & \text{$b \neq + \infty$}\\
+      \\ \\
+        \bot   & \text{if $int = \bot$}\\
+      \\ \\
+      \top & \text{otherwise} \\
+\end{array} 
+\right.
+\;\; \Rightarrow \;\;
+    \gamma(\alpha(int)) = \left\{
+\begin{array}{ll}
+      & \text{if $int:= [a,b]$ with}\\
+      & \text{$a = b \; \land$}\\
+      \left[ a , a \right] & \text{$a \neq - \infty \; \land$}\\
+      & \text{$b \neq + \infty$}\\
+      \\ \\
+        \bot   & \text{if $int = \bot$}\\
+      \\ \\
+      \left[ -\infty, +\infty \right] & \text{otherwise} \\
+\end{array} 
+\right.
+\end{equation*}\\
+\begin{itemize}
+    \item If $int = \left[ a , a \right]$ with $a \in \zta$, then $id(int) = int = \left[ a , a \right]$. On the other hand, $\gamma(\alpha(int)) = \left[ a , a \right]$. Therefore, $\gamma(\alpha(int)) = \left[ a , a \right] = id(int)$, i.e. $\gamma \circ \alpha(int) \sqsupseteq id(int)$.
+    \item If $int = \bot$, then $id(int) = int = \bot$. On the other hand, $\gamma(\alpha(int)) = \bot$. Therefore, $\gamma(\alpha(int)) = \bot = id(int)$, i.e. $\gamma \circ \alpha(int) \sqsupseteq id(int)$.
+    \item If $int = \left[ a , b \right]$ with $a,b \in \zta$ and $a \neq b$ or $a \neq - \infty$ or $b \neq + \infty$, then $id(int) = id(\left[ a , b \right]) = \left[ a , b \right]$. On the other hand, $\gamma(\alpha(int)) = \left[ -\infty, +\infty \right]$. Therefore, $\gamma \circ \alpha(int) = \left[ -\infty, +\infty \right] \sqsupseteq \left[ a , b \right] = id(int)$, i.e. $\gamma \circ \alpha(int) \sqsupseteq id(int)$
+\end{itemize}\\
+
+\subsubsection*{Proof of $\alpha \circ \gamma \sqsubseteq id$}
+
+Let $z \in \ztop$ be. We know that\\\\
+\begin{equation*}
+    \gamma(z) = \left\{
+\begin{array}{ll}
+      [ z, z]   & \text{if $z \in \mathbb{Z}$}\\
+      \\ \\
+        \bot   & \text{if $z = \bot$}\\
+\\ \\
+       \left[- \infty , + \infty \right]  & \text{if $z = \top $}\\
+        
+\end{array} 
+\right.
+\;\; \Rightarrow \;\;
+\alpha(\gamma(z)) = \left\{
+\begin{array}{ll}
+      z   & \text{if $z \in \mathbb{Z}$}\\
+      \\ \\
+        \bot   & \text{if $z = \bot$}\\
+\\ \\
+       \top & \text{if $z = \top $}\\
+        
+\end{array} 
+\right.
+\end{equation*}\\
+\begin{itemize}
+    \item If $z \in \zta$, then $id(z) = z$. On the other hand, $\alpha(\gamma(z)) = z$. Therefore, $\alpha(\gamma(z)) = z = id(z)$, i.e. $\alpha \circ \gamma(z) \sqsubseteq id(z)$.
+    \item If $z = \bot$, then $id(z) = \bot$. On the other hand, $\alpha(\gamma(z)) = \bot$. Therefore, $\alpha(\gamma(z)) = \bot = id(z)$, i.e. $\alpha \circ \gamma(z) \sqsubseteq id(z)$.
+    \item If $z = \top$, then $id(z) = \top$. On the other hand, $\alpha(\gamma(z)) = \top$. Therefore, $\alpha \circ \gamma(z) = \top  = id(int)$, i.e. $\alpha \circ \gamma(z) \sqsupseteq id(z)$
+\end{itemize}\\\\
+
+\begin{enumerate}
+\item[2.] Extend this Galois connection to mappings on program variables $$\left( \var \longrightarrow \interval, \alpha', \gamma', \var \longrightarrow \ztop \right)$$ and define $\alpha'$ and $\gamma'$ in the standard way.\\
+\end{enumerate}
+\subsubsection*{Solution}
+By the last exercise, we know that $(\interval, \alpha, \gamma, \ztop)$ is a Galois connection.\\
+
+Let us consider the following sets $\state = \var \longrightarrow \interval$ and $\state^{\sharp} = \var \longrightarrow \ztop$.  We can extend $(\interval, \alpha, \gamma, \ztop)$ to $(\state, \alpha', \gamma', \state^{\sharp})$ where $\alpha'$ and $\gamma'$ are two function defined as follow:\\\\
+\begin{equation*}
+\begin{matrix}
+      \alpha': & \state & \longrightarrow &\ztop \\
+        & f &\longrightarrow & \alpha \circ f\\
+        \\\\
+      \gamma': & \state^{\sharp} & \longrightarrow &\interval \\
+        & g &\longrightarrow & \gamma \circ g
+\end{matrix} 
+\end{equation*}\\\\\\\\
+\begin{enumerate}
+\item[3.] Define an abstract interpreter $\llbracket e \rrbracket^{\sharp}: \state^{\sharp} \longrightarrow \ztop$ that determines whether the result of an expression must be constant at runtime.
+\end{enumerate}
+\subsubsection*{Solution}
+
+Let $n, z_1, z_2 \in \ztop$, $\x \in \var$ and $e_1, e_2 \in AExp$ be. Let us consider $\pl, \ml, \tl: \left(\ztop \times \ztop\right) \longrightarrow \ztop$ defined as follow:\\
+\begin{equation*}
+\begin{matrix}
+      \pl: & \left(\ztop \times \ztop\right) & \longrightarrow &\ztop \\\\
+        & (z_1, z_2) & \longrightarrow & \left\{
+\begin{array}{ll}
+\\
+      z_1 +_{\zta} z_2   & \text{if $z_1 \notin \left\{ \top, \bot \right\}$}\\
+       & \text{and $z_2 \notin \left\{ \top, \bot \right\}$}\\\\
+       \top & \text{otherwise}\\\\
+        
+\end{array} 
+\right.\\
+\\\\
+      \ml: & \left(\ztop \times \ztop\right) & \longrightarrow &\ztop \\\\
+        & (z_1, z_2) & \longrightarrow & \left\{
+\begin{array}{ll}
+\\
+      z_1 -_{\zta} z_2   & \text{if $z_1 \notin \left\{ \top, \bot \right\}$}\\
+       & \text{and $z_2 \notin \left\{ \top, \bot \right\}$}\\\\
+       \top & \text{otherwise}\\\\
+        
+\end{array} 
+\right.\\
+\\\\
+      \tl: & \left(\ztop \times \ztop\right) & \longrightarrow &\ztop \\\\
+        & (z_1, z_2) & \longrightarrow & \left\{
+\begin{array}{ll}
+\\
+      z_1 *_{\zta} z_2   & \text{if $z_1 \notin \left\{ \top, \bot \right\}$}\\
+       & \text{and $z_2 \notin \left\{ \top, \bot \right\}$}\\\\
+       \top & \text{otherwise}\\\\
+        
+\end{array} 
+\right.\\
+\end{matrix} 
+\end{equation*}\\\\
+Let $\sgs \in \state^{\sharp}$ be. We can define an abstract interpreter $\llbracket e \rrbracket^{\sharp}: \state^{\sharp} \longrightarrow \ztop$ as follow:\\\\
+\begin{equation*}
+\begin{array}{rll}
+      \llbracket n \rrbracket^{\sharp} & = & \lambda \sgs . \; n  \\\\
+      \llbracket x \rrbracket^{\sharp} & = & \lambda \sgs . \; \sgs(x)  \\\\
+      \llbracket e_1 + e_2 \rrbracket^{\sharp} & = & \lambda \sgs . \; \llbracket e_1 \rrbracket^{\sharp} \sgs \pl \llbracket e_2 \rrbracket^{\sharp} \sgs  \\\\
+      \llbracket e_1 - e_2 \rrbracket^{\sharp} & = & \lambda \sgs . \; \llbracket e_1 \rrbracket^{\sharp} \sgs \ml \llbracket e_2 \rrbracket^{\sharp} \sgs  \\\\
+      \llbracket e_1 * e_2 \rrbracket^{\sharp} & = & \lambda \sgs . \; \llbracket e_1 \rrbracket^{\sharp} \sgs \tl \llbracket e_2 \rrbracket^{\sharp} \sgs  \\\\
+        
+\end{array}
+\end{equation*}\\\\\\\\\\
+\begin{enumerate}
+\item[4.] Finally, show that the interpreter is correct by proving that $\ssem \sqsupseteq \alpha \; \circ \seme \circ \gamma'$, where $\seme$ is the abstract interpretation in the lattice of intervals.
+\end{enumerate}
+\subsubsection*{Solution}
+\subsubsection*{Case $\ssx{n}$.}
+On the one hand, we know that $\ssx{n} = \lambda \sgs. \; n$ for all $\sgs \in \state^{\sharp}$.\\
+On the other hand, $\alpha \sem{n} \gamma' = \lambda \sgs .\; \alpha \sem{n}\left(\gamma \circ \sgs\right)$ for all $\sgs \in \state^{\sharp} \iff \alpha \sem{n} \gamma' = \lambda \sgs. \; \alpha \left( \left[ n,n \right] \right)$ for all $\sgs \in \state^{\sharp} \iff \alpha \sem{n} \gamma' = \lambda \sgs. \; n$ for all $\sgs \in \state^{\sharp}$. Therefore, $$\ssx{n} = \lambda \sgs. \; n = \alpha \sem{n} \gamma'$$ for all $\sgs \in \state^{\sharp}$. Therefore, $\ssx{n} \sqsupseteq \alpha \sem{n} \gamma'$.\\
+\subsubsection*{Case $\ssx{x}$.}
+On the one hand, we know that $\ssx{x} = \lambda \sgs. \; \sgs(x)$ for all $\sgs \in \state^{\sharp}$.\\
+On the other hand, $\alpha \sem{x} \gamma' = \lambda \sgs .\; \alpha \sem{x}\left(\gamma \circ \sgs\right)$ for all $\sgs \in \state^{\sharp} \iff \alpha \sem{x} \gamma' = \lambda \sgs. \; \alpha \left(\gamma \circ \sgs\right)(x)$ for all $\sgs \in \state^{\sharp} \iff \alpha \sem{x} \gamma' = \lambda \sgs. \; \left( \alpha \circ \gamma \right) \circ \sgs(x)$ for all $\sgs \in \state^{\sharp}$.\\\\
+By exercise 1, we know that $\alpha \circ \gamma \sqsubseteq id$, in particular: $$\ssx{x} = \lambda \sgs. \; \sgs(x) = \lambda \sgs. \; id(\sgs(x)) \sqsupseteq \lambda \sgs. \; \left( \alpha \circ \gamma \right) \circ \sgs(x) = \alpha \sem{x} \gamma'$$ for all $\sgs \in \state^{\sharp}$. Therefore, $\ssx{x} \sqsupseteq \alpha \sem{x} \gamma'$.
+\end{document}
