@@ -28,7 +28,7 @@ function count(v:array<int>,x:int,c:int,f:int): (cont:int)
 requires 0 <= c <= f <= v.Length
 decreases f - c
 reads v;
-{if c == f then 0 else (if v[c]==x then 1 + count(v,x,c+1,f) else count(v,x,c+1,f))}
+{if c == f then 0 else if (v[c]==x) then 1 + count(v,x,c+1,f) else count(v,x,c+1,f)}
 // 
 
 
