@@ -45,7 +45,7 @@ ensures r>=0 && r*r <= n <(r+1)*(r+1)
 	  invariant r < y;
 	  invariant r * r <= n; 
 	  invariant  y * y > n;
-	  decreases y - (r + 1);
+	  decreases y - r;
 	 {
 	   h:=(r+y)/2;
 	   if (h*h<=n)

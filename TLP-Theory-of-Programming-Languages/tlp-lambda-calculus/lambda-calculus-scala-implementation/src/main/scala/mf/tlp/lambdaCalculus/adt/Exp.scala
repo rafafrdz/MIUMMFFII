@@ -8,9 +8,13 @@ import scala.language.implicitConversions
 sealed trait Exp[T] {
   self =>
   override def toString: String = pretty[T](self)
+
+  def <>(e: Exp[T]): Application[T] = Application[T](self, e)
 }
 
-case class Var[T](value: T) extends Exp[T]
+case class Var[T](value: T) extends Exp[T] {
+  def ~>(e: Exp[T]): Lambda[T] = Lambda(this, e)
+}
 
 case class Lambda[T](v: Var[T], scope: Exp[T]) extends Exp[T]
 
@@ -24,6 +28,7 @@ object Exp {
   def \[T](v: Var[T], scope: Exp[T]): Lambda[T] = Lambda[T](v, scope)
 
   def <>[T](e1: Exp[T], e2: Exp[T]): Application[T] = Application[T](e1, e2)
+
 
   def pretty[T](term: Exp[T], m: Int = 0): String = term match {
     case Var(value) => value.toString
@@ -130,54 +135,14 @@ object Exp {
 
   def beta(term: Exp[String], from: Var[String], to: Exp[String]): Exp[String] = cas(term, from, to)
 
-//  @tailrec
   def betaconversion(term: Exp[String]): Exp[String] = term match {
     case Lambda(v, scope) => Lambda(v, betaconversion(scope))
-    case Application(e1: Lambda[String], e2) =>
-      betaconversion(beta(e1.scope, e1.v, e2))
+    case Application(e1: Application[String], e2) => betaconversion(Application(betaconversion(e1), e2))
+    case Application(e1: Lambda[String], e2) => betaconversion(beta(e1.scope, e1.v, e2))
     case e: Exp[String] => e
   }
-}
 
-object Example extends App {
+  def red(term: Exp[String]): Exp[String] = betaconversion(term)
 
-  import Exp._
-
-  val x = v("x")
-  val y = v("y")
-  val b = v("b")
-  val a = v("a")
-  val z = v("z")
-  val TRUE: Exp[String] = \(x, \(y, <>(x, y)))
-  val FALSE: Exp[String] = \(x, \(y, <>(y, x)))
-  val ALGO: Exp[String] = \(x, \(y, <>(<>(y, x), a)))
-  val ALGO2: Exp[String] = \(x, <>(\(y, <>(y, x)), y))
-
-
-  //  println(freeVariable(TRUE))
-  //  println(freeVariable(FALSE))
-  //  println(freeVariable(ALGO))
-  //  println(freeVariable(ALGO2))
-
-
-  println(TRUE)
-  println(alpha(TRUE, x, a))
-  //  println(ALGO)
-  //  println(alpha(ALGO, x, Var("a")))
-
-  val example = \(a, \(x, <>(<>(\(y, a), x), b)))
-  val example2 = <>(\(a, \(x, <>(\(y, a), x))), Exp.numeral(0))
-  val app = <>(example, Exp.numeral(0))
-  println(example)
-  println(numeral(0))
-  println(beta(example, a, numeral(0)))
-  println(example2)
-  println(betaconversion(example2))
-
-  val algomas = \(x, <>(\(y, \(x, <>(x, y))),x))
-  println(algomas)
-  println(alphaconversion(algomas))
-  println(betaconversion(algomas))
-  //  println(alpha(example, x, z))
 
 }
