@@ -143,5 +143,5 @@ object Exp {
     case Application(e1: Lambda[String], e2) => betaconversion(beta(e1.scope, e1.v, e2))
     case e: Exp[String] => e
   }
-  
+
 }
