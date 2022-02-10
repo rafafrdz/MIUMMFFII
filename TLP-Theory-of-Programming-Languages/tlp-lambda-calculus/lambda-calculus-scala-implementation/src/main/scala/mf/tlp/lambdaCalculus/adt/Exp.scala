@@ -1,19 +1,23 @@
 package mf.tlp.lambdaCalculus.adt
 
-import mf.tlp.lambdaCalculus.adt.Exp.pretty
+import mf.tlp.lambdaCalculus.adt.Exp.show
+import mf.tlp.lambdaCalculus.exercises.Exercise
 
 import scala.annotation.tailrec
 import scala.language.implicitConversions
 
 sealed trait Exp[T] {
   self =>
-  override def toString: String = pretty[T](self)
+  override def toString: String = show[T](self)
 
   def <>(e: Exp[T]): Application[T] = Application[T](self, e)
 }
 
 case class Var[T](value: T) extends Exp[T] {
+  /** Two ways to do a lambda term from a variable */
   def ~>(e: Exp[T]): Lambda[T] = Lambda(this, e)
+
+  def ->(e: Exp[T]): Lambda[T] = ~>(e)
 }
 
 case class Lambda[T](v: Var[T], scope: Exp[T]) extends Exp[T]
@@ -22,7 +26,6 @@ case class Application[T](e1: Exp[T], e2: Exp[T]) extends Exp[T]
 
 object Exp {
 
-
   def v[T](value: T): Var[T] = Var[T](value)
 
   def \[T](v: Var[T], scope: Exp[T]): Lambda[T] = Lambda[T](v, scope)
@@ -30,7 +33,10 @@ object Exp {
   def <>[T](e1: Exp[T], e2: Exp[T]): Application[T] = Application[T](e1, e2)
 
 
-  def pretty[T](term: Exp[T], m: Int = 0): String = term match {
+  /** Method to show in a pretty form the lambda-expression `term` */
+  def show[T](term: Exp[T]): String = pretty[T](term)
+
+  private def pretty[T](term: Exp[T], m: Int = 0): String = term match {
     case Var(value) => value.toString
     case Lambda(v, scope) => {
       lazy val s: String = s"λ$v.${pretty(scope)}"
@@ -42,27 +48,7 @@ object Exp {
     }
   }
 
-  def show[T](term: Exp[T]): String = {
-    def aux(t: Exp[T]): String = {
-      t match {
-        case Var(value) => value.toString
-        case Lambda(v, scope) => s"(λ${aux(v)}.${aux(scope)})"
-        case Application(e1, e2) => s"(${aux(e1)} ${aux(e2)})"
-      }
-    }
-
-    aux(term).tail.init
-  }
-
-  def numeral(n: Int): Exp[String] = {
-    def aux(m: Int): Exp[String] = {
-      if (m == 0) Var("x")
-      else <>(Var("f"), aux(m - 1))
-    }
-
-    Lambda(Var("f"), Lambda(Var("x"), aux(n)))
-  }
-
+  /** Method to get the freeVariables in terms of type T */
   def freeVariable[T](term: Exp[T]): List[T] = {
     def aux(exp: Exp[T], bounded: List[T], free: List[T]): List[T] = exp match {
       case Var(value) => if (bounded.contains(value)) free else value :: free
@@ -73,14 +59,12 @@ object Exp {
     aux(term, Nil, Nil)
   }
 
-  def fv[T](term: Exp[T]): Set[Var[T]] = used(term)
+  /** Method to obtain all variables that `term` contains in terms of Lambda-Expression type `Exp[T]` */
+  def variables[T](term: Exp[T]): Set[Var[T]] = used(term)
 
-  def used[T](term: Exp[T]): Set[Var[T]] = term match {
-    case v@Var(_) => Set(v)
-    case Lambda(v, scope) => Set(v).union(used(scope))
-    case Application(e1, e2) => used(e1).union(used(e2))
-  }
+  private def used[T](term: Exp[T]): Set[Var[T]] = ocurrence[T](term).map(v[T])
 
+  /** Method to obtain all variables that `term` contains in terms of type `T` */
   def ocurrence[T](term: Exp[T]): Set[T] = {
     def aux(exp: Exp[T], occ: List[T]): List[T] = exp match {
       case Var(value) => value :: occ
@@ -91,6 +75,7 @@ object Exp {
     aux(term, Nil).toSet
   }
 
+  /** Methods to get new fresh variables */
   def fresh(set: Set[String], v: String = "x"): Var[String] = {
     val nv: Int => String = (i: Int) => s"$v$i"
 
@@ -110,28 +95,45 @@ object Exp {
     fresh(occ, v.value)
   }
 
+
+  /**
+   * Capture Avoiding Substitution method
+   *
+   * @param term term to performs Capture Avoiding Substitution
+   * @param x    variable that susbstitute
+   * @param N    term to susbstitute
+   * @return
+   */
   def cas(term: Exp[String], x: Var[String], N: Exp[String]): Exp[String] = {
     term match {
       case v@Var(_) if v.equals(x) => N
       case v@Var(_) => v
       case Application(e1, e2) => <>(cas(e1, x, N), cas(e2, x, N))
       case l@Lambda(v, _) if v.equals(x) => l
-      case l@Lambda(y, scope) if !fv(scope).contains(x) => l
-      case Lambda(y, scope) if !fv(N).contains(y) => Lambda(y, cas(scope, x, N))
+      case l@Lambda(y, scope) if !variables(scope).contains(x) => l
+      case Lambda(y, scope) if !variables(N).contains(y) => Lambda(y, cas(scope, x, N))
       case l@Lambda(y, scope) =>
-        val nv: Var[String] = fresh(fv(scope).union(fv(N)), y)
+        val nv: Var[String] = fresh(variables(scope).union(variables(N)), y)
         Lambda(nv, cas(cas(scope, y, nv), x, N))
     }
   }
 
-  def alpha(term: Exp[String], from: Var[String], to: Var[String]): Exp[String] = cas(term, from, to)
+  /** Alpha-reduction method */
+  def alphaRed(term: Exp[String]): Exp[String] = alphaconversion(term)
 
-  def alphaconversion(term: Exp[String]): Exp[String] = term match {
+  private def alpha(term: Exp[String], from: Var[String], to: Var[String]): Exp[String] = cas(term, from, to)
+
+  private def alphaconversion(term: Exp[String]): Exp[String] = term match {
     case Lambda(v, scope) =>
-      val nv: Var[String] = fresh(fv(scope), v)
+      val nv: Var[String] = fresh(variables(scope), v)
       Lambda(nv, alphaconversion(alpha(scope, v, nv)))
     case e: Exp[String] => e
   }
+
+  /** Beta-reduction method o simply red (alias) */
+  def red(term: Exp[String]): Exp[String] = betaconversion(term)
+
+  def betaRed(term: Exp[String]): Exp[String] = betaconversion(term)
 
   def beta(term: Exp[String], from: Var[String], to: Exp[String]): Exp[String] = cas(term, from, to)
 
@@ -142,7 +144,56 @@ object Exp {
     case e: Exp[String] => e
   }
 
-  def red(term: Exp[String]): Exp[String] = betaconversion(term)
 
+}
+
+
+object Example extends Exercise {
+
+  import Exp._
+
+  val TRUE: Exp[String] = \(x, \(y, <>(x, y)))
+  val FALSE: Exp[String] = \(x, \(y, <>(y, x)))
+  val ALGO: Exp[String] = \(x, \(y, <>(<>(y, x), a)))
+  val ALGO2: Exp[String] = \(x, <>(\(y, <>(y, x)), y))
+
+
+  println(TRUE)
+  println(freeVariable(TRUE))
+  println(variables(TRUE))
+  println(ocurrence(TRUE))
+  println(FALSE)
+  println(freeVariable(FALSE))
+  println(variables(FALSE))
+  println(ocurrence(FALSE))
+  println(ALGO)
+  println(freeVariable(ALGO))
+  println(variables(ALGO))
+  println(ocurrence(ALGO))
+  println(ALGO2)
+  println(freeVariable(ALGO2))
+  println(variables(ALGO2))
+  println(ocurrence(ALGO2))
+
+
+  //  println(TRUE)
+  //  println(alpha(TRUE, x, a))
+  //  println(ALGO)
+  //  println(alpha(ALGO, x, Var("a")))
+
+  //  val example = \(a, \(x, <>(<>(\(y, a), x), b)))
+  //  val example2 = <>(\(a, \(x, <>(\(y, a), x))), Exp.numeral(0))
+  //  val app = <>(example, Exp.numeral(0))
+  //  println(example)
+  //  println(numeral(0))
+  //  println(beta(example, a, numeral(0)))
+  //  println(example2)
+  //  println(betaconversion(example2))
+  //
+  //  val algomas = \(x, <>(\(y, \(x, <>(x, y))),x))
+  //  println(algomas)
+  //  println(alphaconversion(algomas))
+  //  println(betaconversion(algomas))
+  //  println(alpha(example, x, z))
 
 }

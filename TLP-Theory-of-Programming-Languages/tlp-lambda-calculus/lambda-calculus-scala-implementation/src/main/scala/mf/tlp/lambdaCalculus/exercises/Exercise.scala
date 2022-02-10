@@ -1,6 +1,7 @@
-package mf.tlp.lambdaCalculus.adt
+package mf.tlp.lambdaCalculus.exercises
 
 import mf.tlp.lambdaCalculus.adt.Exp.v
+import mf.tlp.lambdaCalculus.adt.Var
 
 trait Exercise extends App {
   val x: Var[String] = v("x")

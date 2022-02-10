@@ -1,6 +1,7 @@
-package mf.tlp.lambdaCalculus.adt
+package mf.tlp.lambdaCalculus.exercises
 
 import mf.tlp.lambdaCalculus.adt.Exp.red
+import mf.tlp.lambdaCalculus.adt.{Exp, Lambda, Var}
 
 object Booleans extends Exercise {
 
@@ -30,8 +31,9 @@ object Booleans extends Exercise {
   }
 
   evaluate(
-
-    boolChurch(true) // λx.λy.x
+    TRUE // λx.λy.x
+    , FALSE // λx.λy.Y
+    , boolChurch(true) // λx.λy.x
     , boolChurch(false) // λx.λy.Y
     , boolUnChurch(TRUE) // true
     , boolUnChurch(FALSE) // false

@@ -1,4 +1,4 @@
-package mf.tlp.lambdaCalculus.adt
+package mf.tlp.lambdaCalculus.exercises
 
 object Tuples extends Exercise {
 

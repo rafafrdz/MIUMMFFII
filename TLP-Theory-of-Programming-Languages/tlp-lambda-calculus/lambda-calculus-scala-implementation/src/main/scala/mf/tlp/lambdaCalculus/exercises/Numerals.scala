@@ -1,6 +1,7 @@
-package mf.tlp.lambdaCalculus.adt
+package mf.tlp.lambdaCalculus.exercises
 
-import mf.tlp.lambdaCalculus.adt.Exp.{numeral, red}
+import mf.tlp.lambdaCalculus.adt.Exp.{<>, red}
+import mf.tlp.lambdaCalculus.adt._
 
 object Numerals extends Exercise {
 
@@ -18,6 +19,12 @@ object Numerals extends Exercise {
     case Lambda(_, scope) => numeralUnChurch(scope)
     case Application(_, scope) => 1 + numeralUnChurch(scope)
     case Var(_) => 0
+  }
+
+  private def numeral(n: Int): Exp[String] = {
+    def aux(m: Int): Exp[String] =
+      if (m == 0) Var("x") else <>(Var("f"), aux(m - 1))
+    Lambda(Var("f"), Lambda(Var("x"), aux(n)))
   }
 
   evaluate(
