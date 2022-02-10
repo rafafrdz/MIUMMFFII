@@ -21,7 +21,7 @@ Code is located into `src/main/scala/mr/tlp/lambdaCalculus`
 
 **Code:** `src/main/scala/mf/tlp/lambdaCalculus/adt/Exp.scala`
 
-<script src="https://gist.github.com/rafafrdz/2ec14b7e89beb1b214ab681b203db3c7.js"></script>
+[https://gist.github.com/rafafrdz/4b8f59a5b6398c050b936b24f5c7811b](https://gist.github.com/rafafrdz/4b8f59a5b6398c050b936b24f5c7811b)
 
 where show method is
 
