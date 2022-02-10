@@ -24,6 +24,7 @@ object Numerals extends Exercise {
   private def numeral(n: Int): Exp[String] = {
     def aux(m: Int): Exp[String] =
       if (m == 0) Var("x") else <>(Var("f"), aux(m - 1))
+
     Lambda(Var("f"), Lambda(Var("x"), aux(n)))
   }
 

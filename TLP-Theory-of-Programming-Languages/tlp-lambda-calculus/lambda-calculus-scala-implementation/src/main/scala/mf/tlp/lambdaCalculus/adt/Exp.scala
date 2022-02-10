@@ -1,7 +1,6 @@
 package mf.tlp.lambdaCalculus.adt
 
 import mf.tlp.lambdaCalculus.adt.Exp.show
-import mf.tlp.lambdaCalculus.exercises.Exercise
 
 import scala.annotation.tailrec
 import scala.language.implicitConversions
