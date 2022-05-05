@@ -47,6 +47,8 @@ DDM-Design-of-Domain-Model
 *.xml
 *.tex
 *.properties
+*.iml
+*.lml
 
 ## Build tool directories for auxiliary files
 # latexrun
