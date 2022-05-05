@@ -1,0 +1,118 @@
+Concurrent programming exercises #1
+===================================
+
+1. Write a function ping()
+   that continously receives messages on the format {req,Msg,Pid}
+   and send back a reply to the process with Pid as the message {ack,Msg}.
+
+   Moreover, remove any message from the mailbox which does match
+   the pattern {req,Msg,Pid}, and print them out as an error indication.
+
+   Can you check with a guard if Pid is a process identifier, so that
+   only tuples with a proper pid in the last argument are accepted?
+   (if so add it to the code).
+
+   Try out the function.
+
+
+2. Write a function fibserver() which continuously receives messages
+   on the format {fib,N,Pid}, and computes fib(N), and returns the
+   answer to Pid as the message {fib,N,is,Result}.
+
+   If necessary redesign your function fibserver() so that it can
+   handle multiple messages at the same time, that is, calculating
+   fib(N) for a large N should not block the server. Rather the server
+   should as quickly as possible be ready to receive new orders to
+   compute fibonacci numbers IN PARALLEL with the already ongoing request.
+
+   [hint: use spawn inside fibserver() to do this]
+
+Experiment with fibserver(). Try calling fibserver() in parallel (how do 
+you do this best?)
+
+
+3. Write a simple server that records the largest number received.
+
+   Incoming messages to the server:
+          {put, N}  where N is an integer, remembers N if N is bigger
+                 than any number received earlier
+        {query,Pid}   sends back the largest number received so far to Pid
+                 as the message {largest,V} where V is the largest value
+        {statistics,Pid}  sends back a tuple {P,Q} where P and Q are
+                     the number of put and query messages received
+                  by the server
+
+   Experiment with the server.
+
+
+4. Write a function n_connected_cells(N,Pid) where N is a natural number > 0,
+   and Pid is a process identifier,
+   which creates a "linear network" of n cells (where each cell is a process)
+       [cell_1] --> [cell_2] --> [cell_2] --> [cell_3] --> ... -> [cell_N]
+   such that a cell i sends along any message received to the next cell i+1.
+
+The final cell_N forwards any received message to Pid, i.e., the
+process identifier which is the second argument to the function
+n_connected_cells(N,Pid).
+
+The function n_connected_cells(N,Pid) should return the process
+identifier of cell_1.
+
+The function should behave as follows:
+
+ > Pid = n_connected_cells(20,self()).
+ > Pid!hello.
+ > Pid!hi.
+ > receive X -> X end.  ===> hello
+ > receive X -> X end.  ===> hi
+
+
+5. Implement in Erlang a simple bank application:
+
+    -module(bank).
+    -export([create_bank/0, new_account/2, withdraw_money/3, deposit_money/3, transfer/4]).
+
+    create_bank() -> ...               %% Creates a bank and returns a "bank" handle
+
+    new_account(Bank,AccountNumber) ->  ... %% Creates a new account with account balance 0;
+                                            %% returns true if the account could be created (it was new)
+                                            %% and false otherwise.
+
+    withdraw_money(Bank,AccountNumber,Quantity) -> ... %% Withdraws money from the account
+                                                       %% (if Quantity =< account balance)
+                                                       %% Returns amount of money withdrawn.
+
+    deposit_money(Bank,AccountNumber,Quantity) -> ...  %% Increases balance of account by Quantity,
+                                                       %% returning new balance.
+
+    transfer(Bank,FromAccount, ToAccount, Quantity) -> ... %% Transfers Quantity from one account
+                                                           %% (if the balance is sufficient)
+                                                           %% to another account.
+                                                           %% Returns amount of money transferred.
+
+    balance(Bank,Account)                           -> ... %% returns the current balance for the account.
+
+Implement the bank internally as a process, which listens to sent
+messages and responds to them, similar to the following sketch (DON'T
+look at the below if you are confident in Erlang already):
+
+-module(bank).
+-export([create_bank/0, new_account/2, withdraw_money/3, deposit_money/3, transfer/4]).
+
+create_bank() ->
+   spawn(fun () -> my_bank([]) end).
+my_bank(Accounts) ->
+   receive
+     {new_account,AccountNumber,From} -> ...
+        %% check if account already exists, if not create it; return status to calling process;
+        %% handle other protocol messages such as withdraw_money, etc
+   end.
+
+new_account(Bank,AccountNumber) ->
+   Bank!{new_account,AccountNumber,self()},
+   receive Reply -> Reply end.
+
+
+- Experiment and test your implementation.
+
+

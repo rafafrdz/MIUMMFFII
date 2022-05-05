@@ -1,0 +1,83 @@
+Concurrent programming exercises #2, with link/monitor
+======================================================
+
+Here are some (not too many) exercises on implementing a remote 
+procedure call facility in Erlang.
+
+
+1. Provide a module myrpc, which implements remote procedure calls (rpc).
+
+   myrpc:start()              -- starts the rpc process
+   myrpc:apply(Fun,Args)      -- sends Fun and the list of values
+                                 Args to the started rpc
+                                 process, and returns the answer of computing
+                                 Fun applied to the argument list Args
+                                 (hint: read about erlang:apply/2)
+                                 
+myrpc:apply(Fun,Args) looks like a normal apply(Fun,Args),
+but should be evaluated by the rpc process, instead of in the 
+calling process.
+
+Note that the pid of the rpc process
+is NOT communicated in the apply function, how
+can they still communicate? (i.e., how is the answer returned?)
+
+
+- Test it: an example is myrpc:start(), myrpc:apply(fun erlang:self/0, []).
+
+
+- Does myrpc:apply(fun () -> myrpc:apply(fun (X,Y) -> X+Y end, [1,2]) 
+end,[]) work?
+
+
+Note that a single call should not block the whole rpc server, i.e.,
+do the computation in a new process.
+
+
+
+2. Implement the variant call: myrpc:apply(Fun,Args,Timeout)
+   where if the function call does not return within Timeout milliseconds,
+   the call returns the atom 'timeout'.
+
+That is, myrpc:apply(fun () -> receive X -> X end, [], 1000) ==> 'timeout'.
+
+Make sure that if the call Fun(Args),
+after a long delay, returns an answer the caller of myrpc:apply/2
+does not get a second message in addition to the timeout message.
+How can this be done reliably?
+
+- Make sure that if the call Fun(Args) raises an exception the
+   call myrpc:apply(Fun,Args) returns a tuple {'call_exception', Reason}
+   where Reason is the reason for the exception.
+
+- Make sure that if the rpc server itself crashes, a call
+  myrpc:apply(Fun,Args) returns the atom 'server_crashed'. To do this you need to
+  link to, or monitor, the rpc server in the apply call.
+
+- Try your implementation with a faulty myrpc server, i.e.,
+introduce a bug.
+
+- Implement an automatic restart functionality for the rpc server, this
+can for instance be another process that monitors/links the server,
+and when it notices that the server crashes, a new server process is 
+created (again using linking/monitoring).
+
+- Try to run the rpc server on an Erlang node (runtime system)
+separate from the calling process; any problems?
+
+- Implement a new call:
+
+myrpc:apply_after(Delay,Fun,Args) that executes Fun(Args), remotely,
+after a delay of Delay milliseconds.
+
+- How could you implement the function
+   myrpc:terminate()
+   which should terminate the rpc server, and all ongoing remote procedure
+   calls, as soon as possible?
+
+
+
+
+
+
+
