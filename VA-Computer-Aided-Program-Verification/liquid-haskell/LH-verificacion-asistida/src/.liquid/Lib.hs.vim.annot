@@ -1,7 +1,0 @@
-1:1-1:1::Lib.$trModule :: "GHC.Types.Module"
-9:1-9:5::Lib.vals :: "[{VV : GHC.Types.Int | VV >= 0}]"
-9:9-9:10::lq_anf$##7205759403792793614 :: "GHC.Types.Int"
-9:11-9:12::lq_anf$##7205759403792793616 :: "GHC.Types.Int"
-9:13-9:14::lq_anf$##7205759403792793618 :: "GHC.Types.Int"
-12:1-12:9::Lib.someFunc :: "(GHC.Types.IO ())"
-12:21-12:31::lq_anf$##7205759403792793623 :: "[GHC.Types.Char]"

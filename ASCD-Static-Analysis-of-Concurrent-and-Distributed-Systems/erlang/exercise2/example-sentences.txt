@@ -1,0 +1,14 @@
+c(bank).
+B = bank:create_bank().
+bank:new_account(B, rafa). 
+bank:new_account(B, someone).
+bank:deposit_money(B, rafa, 22250).
+bank:balance(B, rafa).
+bank:balance(B, someone).
+bank:show(B).
+bank:transfer(B, rafa, someone, 400).
+bank:balance(B, rafa).
+bank:balance(B, someone).
+bank:transfer(B, someone, rafa, 4000).
+bank:balance(B, rafa).
+bank:balance(B, someone).

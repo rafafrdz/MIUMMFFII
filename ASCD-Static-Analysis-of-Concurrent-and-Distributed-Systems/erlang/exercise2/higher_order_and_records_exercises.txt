@@ -1,0 +1,103 @@
+Exercises on higher-order programming
+=====================================
+
+- Implement all(F, L) -- check documentation in the the lists module in 
+the standard library --
+that returns true if applying the function F to all elements
+in L returns true.
+
+Example:
+     all(fun (X) -> X > 5 end, [1,8,9])
+     returns false since 1 is less than 5.
+
+- Implement foldl and foldr; check the documentation in the standard library
+   lists module for how the functions are supposed to work.
+
+- Implement filter and map. (Check documentation in lists module).
+
+- Experiment with call the above functions both using anonymous functions
+and "named functions" (functions given a name in a module).
+
+For instance, implement a function to increment the values of a list
+both using map (the natural way), and using some variant of fold.
+
+- Work with binary trees, represented as tuples
+   {node, Node, LeftChild, RightChild}, where Left and Right can be the 
+atom void,
+   signifying an absent child.
+
+   That is, the binary tree
+        2
+       / \
+      5   6
+         /
+        8
+
+is represented as the value
+    {node, 2, {node, 5, void, void}, {node, 6, {node, 8, void, void}, void}}
+or something similar :-)
+
+Write a map for such trees, i.e.,
+       tree(F, T)
+where F is a function that is applied to the node value (2, 5, 6, 8)
+and T is the tree.
+
+Suppose we call
+     tree(fun (X) -> X + 1 end, T) where T is tree above, the function 
+returns:
+
+        3
+       / \
+      6   7
+         /
+        9
+
+- Think about fold for trees, what are natural definitions?
+Implement some variant of fold for trees.
+
+- Test fold and map in different ways, i.e., computing the sum of the 
+values in a tree, and
+implement find(Pred,L), which returns {ok, Value} if there is a node 
+with value Value in the tree, such that Pred(Value) == true,
+and otherwise returns false. Do other experiments, calling the functions 
+from the shell.
+
+
+Records and Maps
+================
+
+- Read about records in Erlang; a record is a purely syntactical construct
+for giving names to elements in a tuple.
+
+- Read about maps in Erlang, this is a more dynamic data structure that
+can be used instead of records for the same purposes.
+
+- Now, using either maps or records (what you prefer), redo the exercises
+on trees using maps (or records).
+
+For instance, if using records, 
+
+define a record node:
+        -define(node, {value, left, right}).
+
+and redo the exercises on trees using node records instead of
+the tuple {node, Node, LeftChild, RightChild}, i.e., implement
+map and some variant of fold.
+
+- Test fold and map in different ways, i.e., computing the sum of the 
+values in a tree, and
+implement find(Pred,L), which returns {ok, Value} if there is a node 
+with value Value in the tree, such that Pred(Value) == true,
+and otherwise returns false. Do other experiments, calling the functions 
+from the shell.
+
+- Can you use records in the Erlang shell?
+   Why is this?
+
+- How are records printed in the Erlang shell?
+   Why is this?
+
+
+
+- Your own exercises...
+
