@@ -47,11 +47,35 @@ ensures SumR(s+t) == SumR(s)+SumR(t)
 
 }
 
+lemma concatEmpty(s : seq<int>)
+  ensures [] + s == s && s + [] == s;
+{}
+
+lemma lastElementSeq(s : seq<int>, i : int, j : int)
+  requires 0 <= i < j <= |s|;
+  ensures s[i..j] == s[i..j-1] + s[j-1..j];
+{}
 
 lemma {:induction s,t} SumByPartsL(s:seq<int>,t:seq<int>)
 decreases s,t
 ensures SumL(s+t) == SumL(s)+SumL(t)
-//Prove this
+{
+  if s == [] {
+    concatEmpty(t);
+  } else if t == [] {
+    concatEmpty(s);
+  } else {
+    SumByPartsL(s[1..], t);
+    calc == {
+      SumL(s) + SumL(t);
+      s[0] + SumL(s[1..]) + SumL(t);
+      (s + t)[0] + SumL(s[1..] + t);
+      { concatFirst(s,t); }
+      (s + t)[0] + SumL((s + t)[1..]);
+      SumL(s + t);
+    }
+  }
+}
 
 
 
@@ -60,7 +84,25 @@ lemma  {:induction s,i,j} equalSumR(s:seq<int>,i:int,j:int)
 decreases j-i
 requires 0<=i<=j<=|s|
 ensures  SumR(s[i..j])==SumL(s[i..j])
-//Prove this
+{
+  if j > i + 1 {
+    calc == {
+      SumR(s[i..j]);
+      { lastElementSeq(s, i, j); }
+      SumR(s[i..j-1] + s[j-1..j]);
+      { SumByPartsR(s[i..j-1], s[j-1..j]); }
+      SumR(s[i..j-1]) + SumR(s[j-1..j]);
+      { equalSumR(s, i, j-1); }
+      SumL(s[i..j-1]) + SumR(s[j-1..j]);
+      { equalSumR(s, j-1, j); }
+      SumL(s[i..j-1]) + SumL(s[j-1..j]);
+      { SumByPartsL(s[i..j-1], s[j-1..j]); }
+      SumL(s[i..j-1] + s[j-1..j]);
+      { lastElementSeq(s, i, j); }
+      SumL(s[i..j]);
+    }
+  }
+}
 
 
 lemma equalSumsV()
@@ -91,43 +133,42 @@ lemma ArrayFacts<T>()
   
 
    method sumElems(v:array<int>) returns (sum:int)
+  //ensures sum==SumL(v[0..v.Length])
+  //ensures sum==SumR(v[..])
+  ensures sum==SumV(v,0,v.Length)
+  {
+    ArrayFacts<int>();
+    sum := 0;
+    var idx : int;
+    idx := 0;
+    while idx < v.Length
+    decreases v.Length - idx;
+    invariant 0 <= idx <= v.Length;
+    invariant sum == SumV(v,0,idx);
+    {
+      sum := sum + v[idx];
+      idx := idx + 1;
+    }
+  }
+
+
+method sumElemsB(v:array<int>) returns (sum:int)
 //ensures sum==SumL(v[0..v.Length])
-//ensures sum==SumR(v[..])
-ensures sum==SumV(v,0,v.Length)
-
-{ArrayFacts<int>();
- sum:=0;
- var i:int;
- i:=0;
- while (i<v.Length)
-   decreases v.Length - i//write
-   invariant 0 <= i <= v.Length && sum == SumL(v[..i]) //write
-
- {
-   ArrayFacts<int>();
-  sum:=sum+v[i];
-  i:=i+1;
+ensures sum==SumR(v[0..v.Length])
+{
+  ArrayFacts<int>();
+  sum := 0;
+  var idx : int;
+  idx := v.Length;
+  while idx > 0
+    decreases idx;
+    invariant 0 <= idx <= v.Length;
+    invariant sum == SumR(v[idx..v.Length]);
+  {
+    sum := sum + v[idx - 1];
+    idx := idx - 1;
   }
 }
-
-// method sumElemsB(v:array<int>) returns (sum:int)
-// //ensures sum==SumL(v[0..v.Length])
-// ensures sum==SumR(v[0..v.Length])
-// {
-// ArrayFacts<int>();
-//  sum:=0;
-//  var i:int;
-//  i:=v.Length;
-//  while (i>0)
-//    decreases //write
-//    invariant //write
-//  {
-//   sum:=sum+v[i-1];
-//   i:=i-1;
-//   }
-
-
-// }
 
 
 

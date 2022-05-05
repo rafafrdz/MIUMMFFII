@@ -8,8 +8,10 @@ ensures b ==> 0<=i<v.Length && v[i]<0 && positive(v[0..i]) // el primer elemento
 { 
  i:=0;b:=false;
  while (i<v.Length && !b)
-    invariant //
-    decreases // creo que es v.Length, b
+    decreases v.Length - i;
+    invariant 0<=i<=v.Length;
+    invariant b ==> i>0 && v[i-1]<0 && positive(v[0..i - 1]);
+    invariant !b ==> positive(v[0..i]);
   { b:=(v[i]<0);
     i:=i+1;
    }
@@ -22,8 +24,11 @@ ensures b ==> 0<=i<v.Length && v[i]<0 && positive(v[0..i])
 { 
  i:=0;b:=false;
  while (i<v.Length && !b)
-    invariant //
-    decreases //
+ decreases v.Length - i, !b;
+    invariant 0 <=i<= v.Length;
+    invariant b ==>i<v.Length && v[i]<0 && positive(v[0..i])
+    invariant !b ==> positive(v[0..i])
+    
   { b:=(v[i]<0);
     if (!b) {i:=i+1;}
    }

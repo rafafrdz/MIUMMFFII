@@ -1,0 +1,12 @@
+name:                LH-verificacion-asistida
+version:             0.1.0.0
+
+dependencies:
+  - liquidhaskell
+  - liquid-base
+  - liquid-prelude
+  - liquid-ghc-prim
+  - liquid-containers
+
+library:
+  source-dirs: src

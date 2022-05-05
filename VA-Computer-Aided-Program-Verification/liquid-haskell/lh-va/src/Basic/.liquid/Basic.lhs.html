@@ -1,0 +1,489 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<title>src/Basic/Basic.lhs</title>
+</head>
+<head>
+<link type='text/css' rel='stylesheet' href='liquid.css' />
+</head>
+
+<body>
+<hr>
+Put mouse over identifiers to see inferred types
+
+Refinement Types
+================
+
+\begin{comment}
+\begin{code}
+<pre><span class=hs-linenum>7: </span><span class='hs-keyword'>{-@</span> <span class='hs-conid'>LIQUID</span> <span class='hs-str'>"--short-names"</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>8: </span><span class='hs-keyword'>{-@</span> <span class='hs-conid'>LIQUID</span> <span class='hs-str'>"--no-termination"</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>9: </span><span class='hs-keyword'>module</span> <span class='hs-conid'>Basic.Basic</span> <span class='hs-keyword'>where</span>
+<span class=hs-linenum>10: </span>
+<span class=hs-linenum>11: </span><span class='hs-keyword'>import</span> <span class='hs-conid'>Prelude</span> <span class='hs-varid'>hiding</span> <span class='hs-layout'>(</span><span class='hs-varid'>abs</span><span class='hs-layout'>)</span>
+<span class=hs-linenum>12: </span><span class='hs-definition'>divide</span>     <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<span class=hs-linenum>13: </span><span class='hs-definition'>zero''''</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Int</span>
+<span class=hs-linenum>14: </span><span class='hs-definition'>die</span>     <span class='hs-keyglyph'>::</span> <span class='hs-conid'>String</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>a</span>
+</pre>\end{code}
+\end{comment}
+
+\newthought{What is a Refinement Type?} In a nutshell,
+
+ > *Refinement Types* = *Types* + *Predicates*
+
+
+\noindent
+That is, refinement types allow us to decorate types with
+*logical predicates*, which you can think of as *boolean-valued*
+Haskell expressions, that constrain the set of values described
+by the type. This lets us specify sophisticated invariants of
+the underlying values.
+
+Defining Types {#definetype}
+--------------
+
+Let us define some refinement types:^[You can read the type of `Zero` as:
+"`v` is an `Int` *such that* `v` equals `0`" and `NonZero` as : "`v` is
+an `Int` *such that* `v` does not equal `0`"]
+
+\begin{code}
+<pre><span class=hs-linenum>38: </span><span class='hs-keyword'>{-@</span> <span class='hs-keyword'>type</span> <span class='hs-conid'>Zero</span>    <span class='hs-keyglyph'>=</span> <span class='hs-layout'>{</span><span class='hs-varid'>v</span><span class='hs-conop'>:</span><span class='hs-conid'>Int</span> <span class='hs-keyglyph'>|</span> <span class='hs-varid'>v</span> <span class='hs-varop'>==</span> <span class='hs-num'>0</span><span class='hs-layout'>}</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>39: </span><span class='hs-keyword'>{-@</span> <span class='hs-keyword'>type</span> <span class='hs-conid'>NonZero</span> <span class='hs-keyglyph'>=</span> <span class='hs-layout'>{</span><span class='hs-varid'>v</span><span class='hs-conop'>:</span><span class='hs-conid'>Int</span> <span class='hs-keyglyph'>|</span> <span class='hs-varid'>v</span> <span class='hs-varop'>/=</span> <span class='hs-num'>0</span><span class='hs-layout'>}</span> <span class='hs-keyword'>@-}</span>
+</pre>\end{code}
+
+\newthought{The Value Variable} `v` denotes the set of valid inhabitants
+of each refinement type. Hence, `Zero` describes the *set of* `Int` values
+that are equal to `0`, that is, the singleton set containing just `0`, and
+`NonZero` describes the set of `Int` values that are *not* equal to `0`,
+that is, the set `{1, -1, 2, -2, ...}` and so on.
+^[We will use `@`-marked comments to write refinement
+type annotations in the Haskell source file, making these
+types, quite literally, machine-checked comments!]
+
+\newthought{To use} these types we can write:
+
+\begin{code}
+<pre><span class=hs-linenum>54: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>zero</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Zero</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>55: </span><a class=annot href="#"><span class=annottext>{VV : GHC.Types.Int | VV == 0}</span><span class='hs-definition'>zero</span></a>  <span class='hs-keyglyph'>=</span> <span class='hs-num'>0</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Int</span>
+<span class=hs-linenum>56: </span>
+<span class=hs-linenum>57: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>one</span><span class='hs-layout'>,</span> <span class='hs-varid'>two</span><span class='hs-layout'>,</span> <span class='hs-varid'>three</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>NonZero</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>58: </span><a class=annot href="#"><span class=annottext>{VV : GHC.Types.Int | VV /= 0}</span><span class='hs-definition'>one</span></a>   <span class='hs-keyglyph'>=</span> <span class='hs-num'>1</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Int</span>
+<span class=hs-linenum>59: </span><a class=annot href="#"><span class=annottext>{VV : GHC.Types.Int | VV /= 0}</span><span class='hs-definition'>two</span></a>   <span class='hs-keyglyph'>=</span> <span class='hs-num'>2</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Int</span>
+<span class=hs-linenum>60: </span><a class=annot href="#"><span class=annottext>{VV : GHC.Types.Int | VV /= 0}</span><span class='hs-definition'>three</span></a> <span class='hs-keyglyph'>=</span> <span class='hs-num'>3</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Int</span>
+</pre>\end{code}
+
+Errors
+------
+
+If we try to say nonsensical things like:
+
+\begin{code}
+<pre><span class=hs-linenum>69: </span><a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-definition'>nonsense</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == 0
+                     &amp;&amp; v == one'}</span><span class='hs-varid'>one'</span></a>
+<span class=hs-linenum>70: </span>  <span class='hs-keyword'>where</span>
+<span class=hs-linenum>71: </span>  <span class='hs-keyword'>{-@</span> <span class='hs-varid'>one'</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Zero</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>72: </span>  <a class=annot href="#"><span class=annottext>{VV : GHC.Types.Int | VV == 0}</span><span class='hs-varid'>one'</span></a> <span class='hs-keyglyph'>=</span> <span class=hs-error><a class=annot href="#"><span class=annottext>{v : GHC.Prim.Int# | v == 1}</span><span class='hs-num'>1</span></a></span><span class=hs-error> </span><span class=hs-error><span class='hs-keyglyph'>::</span></span><span class=hs-error> </span><span class=hs-error><span class='hs-conid'>Int</span></span>
+</pre>\end{code}
+
+\noindent
+LiquidHaskell will complain with an error message:
+
+~~~~~{.sh}
+../liquidhaskell-tutorial/src/03-basic.lhs:72:3-6: Error: Liquid Type Mismatch
+
+72 |   one' = 1 :: Int
+       ^^^^
+
+  Inferred type
+    VV : {VV : Int | VV == (1 : int)}
+
+  not a subtype of Required type
+    VV : {VV : Int | VV == 0}
+~~~~~
+
+
+\noindent
+The message says that the expression `1 :: Int` has the type
+
+~~~~~{.sh}
+    {v:Int | v == 1}
+~~~~~
+
+\noindent
+which is *not* (a subtype of) the *required* type
+
+~~~~~{.sh}
+    {v:Int | v == 0}
+~~~~~
+
+\noindent
+as `1` is not equal to `0`.
+
+Subtyping
+---------
+
+What is this business of *subtyping*? Suppose we have some more refinements of `Int`
+
+\begin{code}
+<pre><span class=hs-linenum>115: </span><span class='hs-keyword'>{-@</span> <span class='hs-keyword'>type</span> <span class='hs-conid'>Nat</span>   <span class='hs-keyglyph'>=</span> <span class='hs-layout'>{</span><span class='hs-varid'>v</span><span class='hs-conop'>:</span><span class='hs-conid'>Int</span> <span class='hs-keyglyph'>|</span> <span class='hs-num'>0</span> <span class='hs-varop'>&lt;=</span> <span class='hs-varid'>v</span><span class='hs-layout'>}</span>        <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>116: </span><span class='hs-keyword'>{-@</span> <span class='hs-keyword'>type</span> <span class='hs-conid'>Even</span>  <span class='hs-keyglyph'>=</span> <span class='hs-layout'>{</span><span class='hs-varid'>v</span><span class='hs-conop'>:</span><span class='hs-conid'>Int</span> <span class='hs-keyglyph'>|</span> <span class='hs-varid'>v</span> <span class='hs-varid'>mod</span> <span class='hs-num'>2</span> <span class='hs-varop'>==</span> <span class='hs-num'>0</span> <span class='hs-layout'>}</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>117: </span><span class='hs-keyword'>{-@</span> <span class='hs-keyword'>type</span> <span class='hs-conid'>Lt100</span> <span class='hs-keyglyph'>=</span> <span class='hs-layout'>{</span><span class='hs-varid'>v</span><span class='hs-conop'>:</span><span class='hs-conid'>Int</span> <span class='hs-keyglyph'>|</span> <span class='hs-varid'>v</span> <span class='hs-varop'>&lt;</span> <span class='hs-num'>100</span><span class='hs-layout'>}</span>       <span class='hs-keyword'>@-}</span>
+</pre>\end{code}
+
+\newthought{What is the type of} `zero`? `Zero` of course, but also `Nat`:
+
+\begin{code}
+<pre><span class=hs-linenum>123: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>zero'</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Nat</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>124: </span><a class=annot href="#"><span class=annottext>{VV : GHC.Types.Int | VV &gt;= 0}</span><span class='hs-definition'>zero'</span></a>     <span class='hs-keyglyph'>=</span> <span class='hs-varid'>zero</span>
+</pre>\end{code}
+
+\noindent
+and also `Even`:
+
+\begin{code}
+<pre><span class=hs-linenum>131: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>zero''</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Even</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>132: </span><a class=annot href="#"><span class=annottext>{VV : GHC.Types.Int | VV mod 2 == 0}</span><span class='hs-definition'>zero''</span></a>     <span class='hs-keyglyph'>=</span> <span class='hs-varid'>zero</span>
+</pre>\end{code}
+
+\noindent
+and also any other satisfactory refinement,
+such as ^[We use a different names `zero'`,
+`zero''` etc. as (currently) LiquidHaskell
+supports *at most* one refinement type
+for each top-level name.]
+
+
+\begin{code}
+<pre><span class=hs-linenum>144: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>zero'''</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Lt100</span>  <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>145: </span><a class=annot href="#"><span class=annottext>{VV : GHC.Types.Int | VV &lt; 100}</span><span class='hs-definition'>zero'''</span></a>     <span class='hs-keyglyph'>=</span> <span class='hs-varid'>zero</span>
+</pre>\end{code}
+
+\newthought{Subtyping and Implication}
+`Zero` is the most precise type for `0::Int`, as it is a *subtype* of `Nat`,
+`Even` and `Lt100`. This is because the set of values defined by `Zero`
+is a *subset* of the values defined by `Nat`, `Even` and `Lt100`, as
+the following *logical implications* are valid:
+
++ $v = 0 \Rightarrow 0 \leq v$
++ $v = 0 \Rightarrow v \ \mbox{mod}\ 2 = 0$
++ $v = 0 \Rightarrow v < 100$
+
+\begin{comment}
+Chris Tetreault: I believe that this whole section (within this comment block)
+can be eliminated. It should be clear to anybody who's still following at this
+point that if I can make a small boolean expression (Nat, Even, Lt100), that
+I can make a massive boolean expression (Nat && Even && Lt100). I fell that this
+section just uses a bunch of math runes to confuse us mere mortals, but doesn't
+really add much.
+
+\newthought{Composing Refinements}
+If $P \Rightarrow Q$ and $P \Rightarrow R$ then $P \Rightarrow Q \wedge R$.
+Thus, when a term satisfies multiple refinements, we can compose those
+refinements with `&&`:
+
+\begin{code}
+<pre><span class=hs-linenum>172: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>zero''''</span> <span class='hs-keyglyph'>::</span> <span class='hs-keyword'>{v:</span><span class='hs-conid'>Int</span> <span class='hs-keyword'>| 0 &lt;= v &amp;&amp; v mod 2 == 0 &amp;&amp; v &lt; 100}</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>173: </span><a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v mod 2 == 0
+                     &amp;&amp; v &lt; 100
+                     &amp;&amp; 0 &lt;= v}</span><span class='hs-definition'>zero''''</span></a>     <span class='hs-keyglyph'>=</span> <span class='hs-num'>0</span>
+</pre>\end{code}
+\end{comment}
+
+\begin{comment}
+ES: this is confusingly worded
+\end{comment}
+
+\newthought{In Summary} the key points about refinement types are:
+
+1. A refinement type is just a type *decorated* with logical predicates.
+2. A term can have *different* refinements for different properties.
+3. When we *erase* the predicates we get the standard Haskell types.^[Dually, a
+standard Haskell type has the trivial refinement `true`. For example, `Int` is
+equivalent to `{v:Int|true}`.]
+
+Writing Specifications
+----------------------
+
+Let's write some more interesting specifications.
+
+\newthought{Typing Dead Code} We can wrap the usual `error`
+function in a function `die` with the type:
+
+\begin{code}
+<pre><span class=hs-linenum>198: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>die</span> <span class='hs-keyglyph'>::</span> <span class='hs-keyword'>{v:</span><span class='hs-conid'>String</span> <span class='hs-keyword'>| false}</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>a</span>  <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>199: </span><a class=annot href="#"><span class=annottext>forall a . {VV : [GHC.Types.Char] | false} -&gt; a</span><span class='hs-definition'>die</span></a> <a class=annot href="#"><span class=annottext>{VV : [GHC.Types.Char] | false}</span><span class='hs-varid'>msg</span></a> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>error</span> <a class=annot href="#"><span class=annottext>{v : [GHC.Types.Char] | false}</span><span class='hs-varid'>msg</span></a>
+</pre>\end{code}
+
+The interesting thing about `die` is that the input type has the
+refinement `false`, meaning the function must only be called with
+`String`s that satisfy the predicate `false`.
+This seems bizarre; isn't it *impossible* to satisfy `false`?
+Indeed! Thus, a program containing `die` typechecks *only* when
+LiquidHaskell can prove that `die` is *never called*. For example, LiquidHaskell will *accept*
+
+\begin{code}
+<pre><span class=hs-linenum>210: </span><a class=annot href="#"><span class=annottext>()</span><span class='hs-definition'>cannotDie</span></a> <span class='hs-keyglyph'>=</span> <span class='hs-keyword'>if</span> <a class=annot href="#"><span class=annottext>{v : GHC.Integer.Type.Integer | v == 1}</span><span class='hs-num'>1</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Integer.Type.Integer | v == 1}</span><span class='hs-num'>1</span></a> <span class='hs-varop'>==</span> <a class=annot href="#"><span class=annottext>{v : GHC.Integer.Type.Integer | v == 3}</span><span class='hs-num'>3</span></a>
+<span class=hs-linenum>211: </span>              <span class='hs-keyword'>then</span> <a class=annot href="#"><span class=annottext>{VV : forall a . {v : [GHC.Types.Char] | false} -&gt; a | VV == die}</span><span class='hs-varid'>die</span></a> <a class=annot href="#"><span class=annottext>[GHC.Types.Char]</span><span class='hs-str'>"horrible death"</span></a>
+<span class=hs-linenum>212: </span>              <span class='hs-keyword'>else</span> <a class=annot href="#"><span class=annottext>{v : () | v == ()}</span><span class='hs-conid'>()</span></a>
+</pre>\end{code}
+
+\noindent
+by inferring that the branch condition is always `False` and so `die`
+cannot be called. However, LiquidHaskell will *reject*
+
+\begin{code}
+<pre><span class=hs-linenum>220: </span><a class=annot href="#"><span class=annottext>()</span><span class='hs-definition'>canDie</span></a> <span class='hs-keyglyph'>=</span> <span class='hs-keyword'>if</span> <a class=annot href="#"><span class=annottext>{v : GHC.Integer.Type.Integer | v == 1}</span><span class='hs-num'>1</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Integer.Type.Integer | v == 1}</span><span class='hs-num'>1</span></a> <span class='hs-varop'>==</span> <a class=annot href="#"><span class=annottext>{v : GHC.Integer.Type.Integer | v == 2}</span><span class='hs-num'>2</span></a>
+<span class=hs-linenum>221: </span>           <span class='hs-keyword'>then</span> <a class=annot href="#"><span class=annottext>{VV : forall a . {v : [GHC.Types.Char] | false} -&gt; a | VV == die}</span><span class='hs-varid'>die</span></a> <span class=hs-error><a class=annot href="#"><span class=annottext>[GHC.Types.Char]</span><span class='hs-str'>"horrible death"</span></a></span>
+<span class=hs-linenum>222: </span>           <span class='hs-keyword'>else</span> <a class=annot href="#"><span class=annottext>{v : () | v == ()}</span><span class='hs-conid'>()</span></a>
+</pre>\end{code}
+
+\noindent
+as the branch may (will!) be `True` and so `die` can be called.
+
+
+
+
+Refining Function Types: Pre-conditions
+--------------------------------------
+
+Let's use `die` to write a *safe division* function that
+*only accepts* non-zero denominators.
+
+\begin{code}
+<pre><span class=hs-linenum>238: </span><span class='hs-definition'>divide'</span>     <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<span class=hs-linenum>239: </span><a class=annot href="#"><span class=annottext>GHC.Types.Int -&gt; GHC.Types.Int -&gt; GHC.Types.Int</span><span class='hs-definition'>divide'</span></a> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-varid'>n</span></a> <span class='hs-num'>0</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{VV : forall a . {v : [GHC.Types.Char] | false} -&gt; a | VV == die}</span><span class='hs-varid'>die</span></a> <span class=hs-error><a class=annot href="#"><span class=annottext>[GHC.Types.Char]</span><span class='hs-str'>"divide by zero"</span></a></span>
+<span class=hs-linenum>240: </span><span class='hs-definition'>divide'</span> <span class='hs-varid'>n</span> <span class='hs-varid'>d</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == n}</span><span class='hs-varid'>n</span></a> <span class='hs-varop'>`div`</span> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-varid'>d</span></a>
+</pre>\end{code}
+
+From the above, it is clear to *us* that `div` is only
+called with non-zero divisors. However, LiquidHaskell reports an
+error at the call to `"die"` because, what if `divide'`
+is actually invoked with a `0` divisor?
+
+We can specify that will not happen, with a *pre-condition*
+that says that the second argument is non-zero:
+
+\begin{code}
+<pre><span class=hs-linenum>252: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>divide</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>NonZero</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>253: </span><a class=annot href="#"><span class=annottext>GHC.Types.Int -&gt; {VV : GHC.Types.Int | VV /= 0} -&gt; GHC.Types.Int</span><span class='hs-definition'>divide</span></a> <span class='hs-keyword'>_</span> <span class='hs-num'>0</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{VV : forall a . {v : [GHC.Types.Char] | false} -&gt; a | VV == die}</span><span class='hs-varid'>die</span></a> <a class=annot href="#"><span class=annottext>[GHC.Types.Char]</span><span class='hs-str'>"divide by zero"</span></a>
+<span class=hs-linenum>254: </span><span class='hs-definition'>divide</span> <span class='hs-varid'>n</span> <span class='hs-varid'>d</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-varid'>n</span></a> <span class='hs-varop'>`div`</span> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v /= 0}</span><span class='hs-varid'>d</span></a>
+</pre>\end{code}
+
+\newthought{To Verify} that `divide` never calls `die`, LiquidHaskell infers
+that `"divide by zero"` is not merely of type `String`, but in fact
+has the the refined type `{v:String | false}` *in the context* in
+which the call to `die` occurs. LiquidHaskell arrives at this conclusion by
+using the fact that in the first equation for `divide` the
+*denominator* is in fact
+
+~~~~~{.sh}
+    0 :: {v: Int | v == 0}
+~~~~~
+
+\noindent
+which *contradicts* the pre-condition (i.e. input) type.
+Thus, by contradiction, LiquidHaskell deduces that the first equation is
+*dead code* and hence `die` will not be called at run-time.
+
+\newthought{Establishing Pre-conditions}
+The above signature forces us to ensure that that when we
+*use* `divide`, we only supply provably `NonZero` arguments.
+Hence, these two uses of `divide` are fine:
+
+\begin{code}
+<pre><span class=hs-linenum>279: </span><a class=annot href="#"><span class=annottext>GHC.Types.Int -&gt; GHC.Types.Int -&gt; GHC.Types.Int</span><span class='hs-definition'>avg2</span></a> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-varid'>x</span></a> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-varid'>y</span></a>   <span class='hs-keyglyph'>=</span> <span class='hs-varid'>divide</span> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == x + y}</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == x}</span><span class='hs-varid'>x</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == y}</span><span class='hs-varid'>y</span></a><span class='hs-layout'>)</span> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-num'>2</span></a>
+<span class=hs-linenum>280: </span><a class=annot href="#"><span class=annottext>GHC.Types.Int -&gt; GHC.Types.Int -&gt; GHC.Types.Int -&gt; GHC.Types.Int</span><span class='hs-definition'>avg3</span></a> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-varid'>x</span></a> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-varid'>y</span></a> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-varid'>z</span></a> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>divide</span> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == x}</span><span class='hs-varid'>x</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == y}</span><span class='hs-varid'>y</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == z}</span><span class='hs-varid'>z</span></a><span class='hs-layout'>)</span> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-num'>3</span></a>
+</pre>\end{code}
+
+<div class="hwex" id="List Average">
+Consider the function `avg`:
+
+1. Why does LiquidHaskell flag an error at `n` ?
+2. How can you change the code so LiquidHaskell verifies it?
+
+</div>
+
+
+\begin{code}
+<pre><span class=hs-linenum>293: </span>
+<span class=hs-linenum>294: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>measure</span> <span class='hs-varid'>length'</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>295: </span><span class='hs-definition'>length'</span> <span class='hs-keyglyph'>::</span> <span class='hs-keyglyph'>[</span><span class='hs-varid'>a</span><span class='hs-keyglyph'>]</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<span class=hs-linenum>296: </span><a class=annot href="#"><span class=annottext>forall a . x1:[a] -&gt; {VV : GHC.Types.Int | VV == length' x1}</span><span class='hs-definition'>length'</span></a> <span class='hs-conid'>[]</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : GHC.Prim.Int# | v == 0}</span><span class='hs-num'>0</span></a>
+<span class=hs-linenum>297: </span><span class='hs-definition'>length'</span> <span class='hs-layout'>(</span><span class='hs-keyword'>_</span><span class='hs-conop'>:</span><span class='hs-varid'>xs</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-num'>1</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == length' xs}</span><span class='hs-varid'>length'</span></a> <a class=annot href="#"><span class=annottext>{v : [a] | v == xs
+           &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>xs</span></a>
+<span class=hs-linenum>298: </span>
+<span class=hs-linenum>299: </span>
+<span class=hs-linenum>300: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>avg</span> <span class='hs-keyglyph'>::</span> <span class='hs-keyword'>{v:</span><span class='hs-keyglyph'>[</span><span class='hs-conid'>Int</span><span class='hs-keyglyph'>]</span> <span class='hs-keyword'>| length' v &gt; 0}</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>301: </span><span class='hs-definition'>avg</span>       <span class='hs-keyglyph'>::</span> <span class='hs-keyglyph'>[</span><span class='hs-conid'>Int</span><span class='hs-keyglyph'>]</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<span class=hs-linenum>302: </span><a class=annot href="#"><span class=annottext>{v : [GHC.Types.Int] | length' v &gt; 0} -&gt; GHC.Types.Int</span><span class='hs-definition'>avg</span></a> <a class=annot href="#"><span class=annottext>{v : [GHC.Types.Int] | length' v &gt; 0}</span><span class='hs-varid'>xs</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>GHC.Types.Int -&gt; {v : GHC.Types.Int | v /= 0} -&gt; GHC.Types.Int</span><span class='hs-varid'>divide</span></a> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == total}</span><span class='hs-varid'>total</span></a> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == n
+                     &amp;&amp; v == length' xs}</span><span class='hs-varid'>n</span></a>
+<span class=hs-linenum>303: </span>  <span class='hs-keyword'>where</span>
+<span class=hs-linenum>304: </span>    <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-varid'>total</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-varid'>sum</span></a> <a class=annot href="#"><span class=annottext>{v : [GHC.Types.Int] | v == xs
+                       &amp;&amp; length' v &gt; 0
+                       &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>xs</span></a>
+<span class=hs-linenum>305: </span>    <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == length' xs}</span><span class='hs-varid'>n</span></a>     <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>forall a . x1:[a] -&gt; {VV : GHC.Types.Int | VV == length' x1}</span><span class='hs-varid'>length'</span></a> <a class=annot href="#"><span class=annottext>{v : [GHC.Types.Int] | v == xs
+                       &amp;&amp; length' v &gt; 0
+                       &amp;&amp; len v &gt;= 0}</span><span class='hs-varid'>xs</span></a>  <span class='hs-comment'>-- change this by length'</span>
+</pre>\end{code}
+
+
+Refining Function Types: Post-conditions
+---------------------------------------
+
+Next, let's see how we can use refinements to describe the *outputs* of a
+function. Consider the following simple *absolute value* function
+
+\begin{code}
+<pre><span class=hs-linenum>316: </span><span class='hs-definition'>abs</span>           <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<span class=hs-linenum>317: </span><a class=annot href="#"><span class=annottext>GHC.Types.Int -&gt; {VV : GHC.Types.Int | VV &gt;= 0}</span><span class='hs-definition'>abs</span></a> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-varid'>n</span></a>
+<span class=hs-linenum>318: </span>  <span class='hs-keyglyph'>|</span> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-num'>0</span></a> <span class='hs-varop'>&lt;</span> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == n}</span><span class='hs-varid'>n</span></a>     <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == n}</span><span class='hs-varid'>n</span></a>
+<span class=hs-linenum>319: </span>  <span class='hs-keyglyph'>|</span> <span class='hs-varid'>otherwise</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-num'>0</span></a> <span class='hs-comment'>-</span> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == n}</span><span class='hs-varid'>n</span></a>
+</pre>\end{code}
+
+We can use a refinement on the output type to specify that the function
+returns non-negative values
+
+\begin{code}
+<pre><span class=hs-linenum>326: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>abs</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Nat</span> <span class='hs-keyword'>@-}</span>
+</pre>\end{code}
+
+LiquidHaskell *verifies* that `abs` indeed enjoys the
+above type by deducing that `n` is trivially non-negative
+when `0 < n` and that in the `otherwise` case,
+the value `0 - n` is indeed non-negative. ^[LiquidHaskell
+is able to automatically make these arithmetic deductions
+by using an [SMT solver][smt-wiki] which has built-in
+decision procedures for arithmetic, to reason about the
+logical refinements.]
+
+Testing Values: Booleans and Propositions {#propositions}
+-----------------------------------------
+
+In the above example, we *compute* a value that is guaranteed to be a `Nat`.
+Sometimes, we need to *test* if a value satisfies some property, e.g., is `NonZero`.
+For example, let's write a command-line *calculator*:
+
+\begin{code}
+<pre><span class=hs-linenum>346: </span><a class=annot href="#"><span class=annottext>forall a . (GHC.Types.IO a)</span><span class='hs-definition'>calc</span></a> <span class='hs-keyglyph'>=</span> <span class='hs-keyword'>do</span> <a class=annot href="#"><span class=annottext>(GHC.Types.IO ())</span><span class='hs-varid'>putStrLn</span></a> <a class=annot href="#"><span class=annottext>[GHC.Types.Char]</span><span class='hs-str'>"Enter numerator"</span></a>
+<span class=hs-linenum>347: </span>          <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-varid'>n</span></a> <span class='hs-keyglyph'>&lt;-</span> <a class=annot href="#"><span class=annottext>(GHC.Types.IO GHC.Types.Int)</span><span class='hs-varid'>readLn</span></a>
+<span class=hs-linenum>348: </span>          <a class=annot href="#"><span class=annottext>(GHC.Types.IO ())</span><span class='hs-varid'>putStrLn</span></a> <a class=annot href="#"><span class=annottext>[GHC.Types.Char]</span><span class='hs-str'>"Enter denominator"</span></a>
+<span class=hs-linenum>349: </span>          <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-varid'>d</span></a> <span class='hs-keyglyph'>&lt;-</span> <a class=annot href="#"><span class=annottext>(GHC.Types.IO GHC.Types.Int)</span><span class='hs-varid'>readLn</span></a>
+<span class=hs-linenum>350: </span>          <a class=annot href="#"><span class=annottext>(GHC.Types.IO ())</span><span class='hs-varid'>putStrLn</span></a> <a class=annot href="#"><span class=annottext>[GHC.Types.Char]</span><span class='hs-layout'>(</span></a><span class='hs-varid'>result</span> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == n}</span><span class='hs-varid'>n</span></a> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == d}</span><span class='hs-varid'>d</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum>351: </span>          <a class=annot href="#"><span class=annottext>(GHC.Types.IO a)</span><span class='hs-varid'>calc</span></a>
+</pre>\end{code}
+
+\noindent which takes two numbers and divides them.
+The function `result` checks if `d` is strictly positive
+(and hence, non-zero), and does the division, or otherwise
+complains to the user:
+
+\begin{code}
+<pre><span class=hs-linenum>360: </span><a class=annot href="#"><span class=annottext>GHC.Types.Int -&gt; GHC.Types.Int -&gt; [GHC.Types.Char]</span><span class='hs-definition'>result</span></a> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-varid'>n</span></a> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-varid'>d</span></a>
+<span class=hs-linenum>361: </span>  <span class='hs-keyglyph'>|</span> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Bool | v &lt;=&gt; d &gt; 0}</span><span class='hs-varid'>isPositive</span></a> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == d}</span><span class='hs-varid'>d</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>[GHC.Types.Char]</span><span class='hs-str'>"Result = "</span></a> <span class='hs-varop'>++</span> <a class=annot href="#"><span class=annottext>[GHC.Types.Char]</span><span class='hs-varid'>show</span></a> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == n}</span><span class='hs-varid'>n</span></a> <span class='hs-varop'>`divide`</span> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == d}</span><span class='hs-varid'>d</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum>362: </span>  <span class='hs-keyglyph'>|</span> <span class='hs-varid'>otherwise</span>    <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : GHC.Prim.Addr# | v == "Humph, please enter positive denominator!"}</span><span class='hs-str'>"Humph, please enter positive denominator!"</span></a>
+</pre>\end{code}
+
+Finally, `isPositive` is a test that returns a `True` if
+its input is strictly greater than `0` or `False` otherwise:
+
+\begin{code}
+<pre><span class=hs-linenum>369: </span><span class='hs-definition'>isPositive</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Bool</span>
+<span class=hs-linenum>370: </span><a class=annot href="#"><span class=annottext>x1:GHC.Types.Int -&gt; {v : GHC.Types.Bool | v &lt;=&gt; x1 &gt; 0}</span><span class='hs-definition'>isPositive</span></a> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-varid'>x</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == x}</span><span class='hs-varid'>x</span></a> <span class='hs-varop'>&gt;</span> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-num'>0</span></a>
+</pre>\end{code}
+
+\newthought{To verify} the call to `divide` inside `result`
+we need to tell LiquidHaskell that the division only happens with a `NonZero`
+value `d`. However, the non-zero-ness is established via the *test*
+that occurs inside the guard `isPositive d`. Hence, we require a
+*post-condition* that states that `isPositive` only returns `True`
+when the argument is positive:
+
+\begin{code}
+<pre><span class=hs-linenum>381: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>isPositive</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>x</span><span class='hs-conop'>:</span><span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-keyword'>{v:</span><span class='hs-conid'>Bool</span> <span class='hs-keyword'>| v &lt;=&gt; x &gt; 0}</span> <span class='hs-keyword'>@-}</span>
+</pre>\end{code}
+
+In the above signature, the output type (post-condition)
+states that `isPositive x` returns `True` if and only if
+`x` was in fact strictly greater than `0`. In other words,
+we can write post-conditions for plain-old `Bool`-valued *tests*
+to establish that user-supplied values satisfy some desirable
+property (here, `Pos` and hence `NonZero`) in order to then
+safely perform some computation on it.
+
+<div class="hwex" id="Propositions">
+What happens if you *delete* the type for `isPositive` ?
+Can you *change* the type for `isPositive` (i.e. write some other type)
+while preserving safety?
+</div>
+
+<div class="hwex" id="Assertions">
+Consider the following [assert][hoogle-assert] function, and two use sites.
+Write a suitable refinement type signature for `lAssert` so that
+`lAssert` and `yes` are accepted but `no` is rejected.
+</div>
+
+\begin{code}
+<pre><span class=hs-linenum>405: </span><span class='hs-comment'>--{-@ type TRUE  = {v:Bool | v    } @-}</span>
+<span class=hs-linenum>406: </span><span class='hs-comment'>--{-@ lAssert  :: TRUE -&gt; a -&gt; a @-} -- uncomment this</span>
+<span class=hs-linenum>407: </span><span class='hs-keyword'>{-@</span> <span class='hs-varid'>lAssert</span>  <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Bool</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>a</span> <span class='hs-keyword'>@-}</span>
+<span class=hs-linenum>408: </span><a class=annot href="#"><span class=annottext>forall a . GHC.Types.Bool -&gt; a -&gt; a</span><span class='hs-definition'>lAssert</span></a> <span class='hs-conid'>True</span>  <a class=annot href="#"><span class=annottext>a</span><span class='hs-varid'>x</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{VV : a | VV == x}</span><span class='hs-varid'>x</span></a>
+<span class=hs-linenum>409: </span><span class='hs-definition'>lAssert</span> <span class='hs-conid'>False</span> <span class='hs-keyword'>_</span> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{VV : forall a . {v : [GHC.Types.Char] | false} -&gt; a | VV == die}</span><span class='hs-varid'>die</span></a> <span class=hs-error><a class=annot href="#"><span class=annottext>[GHC.Types.Char]</span><span class='hs-str'>"yikes, assertion fails!"</span></a></span>
+<span class=hs-linenum>410: </span>
+<span class=hs-linenum>411: </span><a class=annot href="#"><span class=annottext>()</span><span class='hs-definition'>yes</span></a> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>lAssert</span> <a class=annot href="#"><span class=annottext>GHC.Types.Bool</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : GHC.Integer.Type.Integer | v == 1}</span><span class='hs-num'>1</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Integer.Type.Integer | v == 1}</span><span class='hs-num'>1</span></a> <span class='hs-varop'>==</span> <a class=annot href="#"><span class=annottext>{v : GHC.Integer.Type.Integer | v == 2}</span><span class='hs-num'>2</span></a><span class='hs-layout'>)</span> <a class=annot href="#"><span class=annottext>{v : () | v == ()}</span><span class='hs-conid'>()</span></a>
+<span class=hs-linenum>412: </span><a class=annot href="#"><span class=annottext>()</span><span class='hs-definition'>no</span></a>  <span class='hs-keyglyph'>=</span> <span class='hs-varid'>lAssert</span> <a class=annot href="#"><span class=annottext>GHC.Types.Bool</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : GHC.Integer.Type.Integer | v == 1}</span><span class='hs-num'>1</span></a> <span class='hs-varop'>+</span> <a class=annot href="#"><span class=annottext>{v : GHC.Integer.Type.Integer | v == 1}</span><span class='hs-num'>1</span></a> <span class='hs-varop'>==</span> <a class=annot href="#"><span class=annottext>{v : GHC.Integer.Type.Integer | v == 3}</span><span class='hs-num'>3</span></a><span class='hs-layout'>)</span> <a class=annot href="#"><span class=annottext>{v : () | v == ()}</span><span class='hs-conid'>()</span></a>
+</pre>\end{code}
+
+\hint You need a pre-condition that `lAssert` is only called with `True`.
+
+Putting It All Together
+-----------------------
+
+Let's wrap up this introduction with a simple `truncate` function
+that connects all the dots.
+
+\begin{code}
+<pre><span class=hs-linenum>424: </span><span class='hs-definition'>truncate</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<span class=hs-linenum>425: </span><a class=annot href="#"><span class=annottext>GHC.Types.Int -&gt; GHC.Types.Int -&gt; GHC.Types.Int</span><span class='hs-definition'>truncate</span></a> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-varid'>i</span></a> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-varid'>max</span></a>
+<span class=hs-linenum>426: </span>  <span class='hs-keyglyph'>|</span> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == i'
+                     &amp;&amp; v &gt;= 0}</span><span class='hs-varid'>i'</span></a> <span class='hs-varop'>&lt;=</span> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == max'
+                     &amp;&amp; v &gt;= 0}</span><span class='hs-varid'>max'</span></a> <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == i}</span><span class='hs-varid'>i</span></a>
+<span class=hs-linenum>427: </span>  <span class='hs-keyglyph'>|</span> <span class='hs-varid'>otherwise</span>  <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == max'
+                     &amp;&amp; v &gt;= 0}</span><span class='hs-varid'>max'</span></a> <span class='hs-varop'>*</span> <a class=annot href="#"><span class=annottext>GHC.Types.Int</span><span class='hs-layout'>(</span></a><a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == i}</span><span class='hs-varid'>i</span></a> <span class='hs-varop'>`divide`</span> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == i'
+                     &amp;&amp; v &gt;= 0}</span><span class='hs-varid'>i'</span></a><span class='hs-layout'>)</span>
+<span class=hs-linenum>428: </span>    <span class='hs-keyword'>where</span>
+<span class=hs-linenum>429: </span>      <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v &gt;= 0}</span><span class='hs-varid'>i'</span></a>       <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v &gt;= 0}</span><span class='hs-varid'>abs</span></a> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == i}</span><span class='hs-varid'>i</span></a>
+<span class=hs-linenum>430: </span>      <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v &gt;= 0}</span><span class='hs-varid'>max'</span></a>     <span class='hs-keyglyph'>=</span> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v &gt;= 0}</span><span class='hs-varid'>abs</span></a> <a class=annot href="#"><span class=annottext>{v : GHC.Types.Int | v == max}</span><span class='hs-varid'>max</span></a>
+</pre>\end{code}
+
+\noindent
+The expression `truncate i n` evaluates to `i` when the absolute value
+of `i` is less than the upper bound `max`, and otherwise *truncates* the value
+at the maximum `n`. LiquidHaskell verifies that the use of `divide` is
+safe by inferring that:
+
+1. `max' < i'` from the branch condition,
+2. `0 <= i'`   from the `abs` post-condition, and
+3. `0 <= max'` from the `abs` post-condition.
+
+From the above, LiquidHaskell infers that `i' /= 0`. That is, at the
+call site `i' :: NonZero`, thereby satisfying the pre-condition
+for `divide` and verifying that the program has no pesky
+divide-by-zero errors.
+
+
+Recap
+-----
+
+This concludes our quick introduction to Refinement Types and
+LiquidHaskell. Hopefully you have some sense of how to
+
+1. **Specify** fine-grained properties of values by decorating their
+   types with logical predicates.
+2. **Encode** assertions, pre-conditions, and post-conditions with suitable
+   function types.
+3. **Verify** semantic properties of code by using automatic logic engines
+   (SMT solvers) to track and establish the key relationships between
+   program values.
+
+</body>
+</html>

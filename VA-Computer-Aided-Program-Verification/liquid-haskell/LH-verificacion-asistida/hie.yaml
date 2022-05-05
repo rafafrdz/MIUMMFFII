@@ -1,0 +1,14 @@
+cradle:
+  multi:
+    - path: "./Setup.hs"
+      config:
+        cradle:
+          none:
+    - path: "./"
+      config:
+        cradle:
+          stack:
+            stackYaml: "stack.yaml"
+            components:
+            - path: "./src"
+              component: "LH-verificacion-asistida:lib"

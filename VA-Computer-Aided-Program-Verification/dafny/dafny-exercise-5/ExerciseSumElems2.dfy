@@ -26,7 +26,7 @@ decreases m
 
 	if x == y
 	{
-		// return;
+		return;
 	}
 	else {
 		calc == {
@@ -66,23 +66,63 @@ decreases m
 }
 
 
+lemma sequenceAxiom(s : seq<int>)
+  ensures s == s[0..|s|];
+  ensures forall i :nat :: i<=|s| ==> s[i..]==s[i..|s|];
+  ensures forall j :nat :: j<=|s| ==> s[..j]==s[0..j];
+{}
+
+// last set into a multiset could see like a multiset with one set (last set)
+lemma lastSetOfMultiSet(s : seq<int>)
+  decreases s;
+  requires 1 <= |s|;
+  ensures multiset{s[|s|-1]} == multiset(s[|s|-1..|s|]) ;
+{}
+// let s: [s[..last]] + [s[last]] == [s] <==> [s] - [s[last]] == [s[..last]]]
+lemma appendDropSetMultiSet(s : seq<int>)
+decreases s
+requires 1 <= |s|;
+ensures multiset(s[..|s|-1]) + multiset{s[|s|-1]} == multiset(s) <==> multiset(s) - multiset{s[|s|-1]} == multiset(s[..|s|-1]);
+{}
+
+
+
 lemma {:induction s} sums(s:seq<int>)
 decreases s
 ensures SumS(s)==SumR(s)
 ensures SumS(s)==SumL(s)
-//Prove this using SumOne
+{
+  if s != [] {
+    equalSumR(s, 0, |s|);
+    SumOne(multiset(s), s[|s|-1]);
+    sequenceAxiom(s);
+    lastSetOfMultiSet(s);
+    SeqFacts<int>();
+    appendDropSetMultiSet(s);
+    sums(s[..|s|-1]);
+  }
+}
 
 
 lemma  decomposeM(v:array<int>,c:int,f:int)
 requires 0<=c<f<=v.Length
 ensures SumVM(v,c,f)==SumVM(v,c,f-1)+v[f-1]
 ensures SumVM(v,c,f)==v[c]+SumVM(v,c+1,f)
-//Prove this using SumByParts
+{
+  if f == c + 1 { SumOne(multiset{v[c]}, v[c]); }
+  else {
+    sums(v[c..f]);
+    SeqFacts<int>();
+    sums(v[c..f - 1]);
+    sums(v[c + 1..f]);
+  }
+}
+
 
 lemma {:induction s,r} sumElemsS(s:seq<int>,r:seq<int>)
 requires multiset(s)==multiset(r)
-//ensures SumR(s)==SumR(r)
-//ensures SumL(s)==SumL(r)
+// ensures SumR(s)==SumR(r)
+// ensures SumL(s)==SumL(r)
 ensures SumS(s)==SumS(r)
 {}
 
@@ -93,18 +133,21 @@ lemma SeqFacts<T>()
      ensures forall s : seq<T>, i,j | 0<=i<=j<=|s| :: |s[i..j]| == j-i
      ensures forall s : seq<T>, i,j | 0<=i<j<=|s| :: s[i..j][..(j-i)-1] == s[i..j-1]
      ensures forall s : seq<T>,i,j,k | 0<=i<=k<=j<=|s| :: multiset(s[i..k])+multiset(s[k..j])==multiset(s[i..j])
-   {forall s : seq<T>,i,j,k | 0<=i<=k<=j<=|s|
-    ensures multiset(s[i..k])+multiset(s[k..j])==multiset(s[i..j])
-    {assert s[i..k]+s[k..j]==s[i..j];}
+   {
+     forall s : seq<T>,i,j,k | 0<=i<=k<=j<=|s|
+     ensures multiset(s[i..k])+multiset(s[k..j])==multiset(s[i..j])
+     {  assert s[i..k]+s[k..j]==s[i..j];  }
+    
     }
+
 
 lemma ArrayFactsM<T>()
 	ensures forall v : array<T>  :: v[..v.Length] == v[..];
 	ensures forall v : array<T>  :: v[0..] == v[..];
-    ensures forall v : array<T>  :: v[0..v.Length] == v[..];
+  ensures forall v : array<T>  :: v[0..v.Length] == v[..];
 
 	ensures forall v : array<T>  ::|v[0..v.Length]|==v.Length;
-    ensures forall v : array<T> | v.Length>=1 ::|v[1..v.Length]|==v.Length-1;
+  ensures forall v : array<T> | v.Length>=1 ::|v[1..v.Length]|==v.Length-1;
     
 	ensures forall v : array<T>  ::forall k : nat | k < v.Length :: v[..k+1][..k] == v[..k]
   ensures forall v:array<int>,i,j | 0<=i<=j<=v.Length :: SumR(v[i..j])==SumL(v[i..j])
@@ -114,52 +157,52 @@ lemma ArrayFactsM<T>()
   ensures forall v:array<int>,i,j | 0<=i<=j<=v.Length ::SumS(v[i..j])==SumL(v[i..j])
   ensures forall v:array<int>,i,j | 0<=i<=j<=v.Length ::SumV(v,i,j)==SumVM(v,i,j)==SumL(v[i..j])==SumR(v[i..j])==SumS(v[i..j])
   ensures forall v:array<int>,i,j,k | 0<=i<=k<=j<=v.Length ::SumVM(v,i,j)==SumVM(v,i,k)+SumVM(v,k,j)
-{equalSumsV();
-SeqFacts<int>();
+{
+  equalSumsV();
+  SeqFacts<int>();
 
   forall v:array<int>,i,j | 0<=i<j<=v.Length
   ensures SumVM(v,i,j)==SumVM(v,i,j-1)+v[j-1]
   {decomposeM(v,i,j);}
 
   forall v:array<int>,i,j | 0<=i<j<=v.Length
-   ensures SumVM(v,i,j)==v[i]+SumVM(v,i+1,j) 
-   {decomposeM(v,i,j);}
+  ensures SumVM(v,i,j)==v[i]+SumVM(v,i+1,j) 
+  {decomposeM(v,i,j);}
 
-   forall s:seq<int>
-   ensures SumS(s)==SumR(s)
-   ensures SumS(s)==SumL(s)
-   {sums(s);}
+  forall s:seq<int>
+  ensures SumS(s)==SumR(s)
+  ensures SumS(s)==SumL(s)
+  {sums(s);}
 
-   //Prove the last property
-
+  forall v : array<int>, i, j, k  | 0 <= i <= k <= j <= v.Length
+  ensures SumVM(v, i, j) == SumVM(v, i, k) + SumVM(v, k, j);
+  { SumByParts(multiset(v[i..k]), multiset(v[k..j]));  }
 }
 
-
-
-
-
-  method sumElems3(v:array<int>) returns (sum:int)
+method sumElems3(v:array<int>) returns (sum:int)
 //ensures sum==SumL(v[0..v.Length])
 //ensures sum==SumR(v[..])
 ensures sum==SumVM(v,0,v.Length)
 
-{ArrayFactsM<int>();
- sum:=0;
- var i:int;
- i:=0; var m:=v.Length/2;
- while (i<m) //First loop computes the sum [0..m)
-   decreases m-i //Write 
-   invariant 0<=i<=m && sum == SumVM(v,0,i)//write
+{
+  ArrayFactsM<int>();
+  sum:=0;
+  var i:int;
+  i:=0; var m:=v.Length/2;
+  while (i<m)
+   decreases m-i
+   invariant 0<=i<=m && sum == SumVM(v,0,i)
  {
-  sum:=sum+v[i];
-  i:=i+1;
+   sum:=sum+v[i];
+   i:=i+1;
   }
-  assert sum==SumVM(v,0,m);
-  var aux:=0;
-  assert i==m;
-  while (i<v.Length)
-   decreases v.Length - i//write
-   invariant //write
+   assert sum==SumVM(v,0,m);
+   var aux:=0;
+   assert i==m;
+   while (i<v.Length)
+    decreases v.Length - i
+    invariant m <= i <= v.Length;
+    invariant aux == SumR(v[m..i]);
   {
     aux:=aux+v[i];
     i:=i+1;
@@ -167,5 +210,3 @@ ensures sum==SumVM(v,0,v.Length)
   assert aux==SumVM(v,m,v.Length);
     sum:=sum+aux;
 }
-
-
