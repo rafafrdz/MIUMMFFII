@@ -50,6 +50,7 @@ DDM/
 *.iml
 *.lml
 .idea/
+*ignore.zip
 
 ## Build tool directories for auxiliary files
 # latexrun
