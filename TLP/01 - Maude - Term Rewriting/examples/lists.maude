@@ -1,0 +1,145 @@
+***Author: Adrian Riesco
+
+fmod PERSON is
+ pr STRING .
+
+ sort Person .
+
+ op <_,_> : String Nat -> Person [ctor] .
+
+ vars S S' : String .
+ vars N N' : Nat .
+
+ ops max min : Person Person -> Person [comm] .
+
+ ceq [max] : max(< S, N >, < S', N' >) = < S, N >
+  if N >= N' .
+ ceq [min] : min(< S, N >, < S', N' >) = < S, N >
+  if N <= N' .
+
+ ops _<=_ _>_ : Person Person -> Bool .
+ eq < S, N > <= < S', N' > = N <= N' .
+ eq < S, N > > < S', N' > = N > N' .
+
+ *** For testing purposes
+ ops a b c d : -> Person .
+ eq a = < "a", 100 > .
+ eq b = < "b", 80 > .
+ eq c = < "c", 150 > .
+ eq d = < "d", 10 > .
+endfm
+
+red a .
+
+red a <= b .
+
+red a > b .
+
+red max(a, b) .
+
+fmod LIST is
+ pr PERSON .
+
+ sorts List OrdList .
+ subsort Person < OrdList < List .
+
+ op lv : -> OrdList [ctor] .
+ op __ : List List -> List [ctor assoc id: lv] .
+
+ vars P P' : Person .
+ vars L L' : List .
+ var  OL : OrdList .
+
+ cmb P P' L : OrdList
+  if P <= P' /\
+     P' L : OrdList .
+
+ op head : List ~> Person .
+ eq head(P L) = P .
+
+ op tail : List ~> List .
+ eq tail(P L) = L .
+
+ op size : List -> Nat .
+ eq size(lv) = 0 .
+ eq size(P L) = s(size(L)) .
+
+ op is? : List Person -> Bool .
+ eq is?(L P L', P) = true .
+ eq is?(L, P) = false [owise] .
+
+ op sort : List -> List .
+ ceq sort(L P P' L') = sort(L P' P L')
+  if P > P' .
+ eq sort(L) = L [owise] .
+
+ op insert-ord : OrdList Person -> OrdList .
+ eq insert-ord(lv, P) = P .
+ eq insert-ord(P L, P') = if P <= P'
+                           then P insert-ord(L, P')
+                           else P' P L
+                           fi .
+
+ op insertion-sort : OrdList -> OrdList .
+ eq insertion-sort(lv) = lv .
+ ceq insertion-sort(P L) = insert-ord(L', P)
+  if L' := insertion-sort(L) .
+endfm
+
+red a b c d .
+
+red tail(a b c d) .
+
+red head(a b c d) .
+
+red size(a b c d) .
+
+red is?(a b c, d) .
+
+red is?(a b c d, d) .
+
+red a d .
+
+red d a .
+
+red sort(a b c d) .
+
+red insert-ord(a, b) .
+
+red insert-ord(insert-ord(insert-ord(insert-ord(lv, a), b), c), d) .
+
+fmod SET is
+ pr PERSON .
+
+ sort Set .
+ subsort Person < Set .
+
+ op es : -> Set [ctor] .
+ op _,_ : Set Set -> Set [ctor assoc comm id: es] .
+endfm
+
+red a, b, c, d .
+
+mod UNIVERSITY is
+ pr LIST .
+ pr SET .
+
+ sort University .
+
+ op [_|_|_]_ : Set OrdList Set Nat -> University [ctor] .
+
+ var  P : Person .
+ vars C C' : Set .
+ var  N : Nat .
+ var  OL : OrdList .
+
+ rl [(P, C) | OL | C'] N
+ => [C | insert-ord(OL, P) | C'] N .
+
+ rl [C | P OL | C'] s(N)
+ => [C | OL | (C', P)] N .
+endm
+
+rew [(a, b, c, d) | lv | es] 3 .
+
+search [(a, b, c, d) | lv | es] 3 =>* [C:Set | OL:OrdList | (C':Set, < "c", 150 >)] N:Nat .
