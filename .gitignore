@@ -52,7 +52,7 @@ DDM/
 *.html
 .idea/
 *ignore.zip
-*--ignore
+*--ignore*
 
 ## Build tool directories for auxiliary files
 # latexrun
