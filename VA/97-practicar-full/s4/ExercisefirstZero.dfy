@@ -6,8 +6,8 @@ ensures i!=v.Length ==> v[i]==0
 {
  i:=0;
  while (i < v.Length && v[i]!=0)
- invariant i <= v.Length
-   decreases v.Length - i
-   invariant forall k:nat :: k < i ==> v[k] != 0
+  invariant i <= v.Length
+  decreases v.Length - i
+  invariant forall k:nat :: k < i ==> v[k] != 0
   {i:=i+1;}
 }

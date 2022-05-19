@@ -14,14 +14,16 @@ ensures b <==> forall k:nat :: k < n ==> v[k] in w[0..m]
 //v and w are strictly increasing ordered arrays
 //b is true iff the first n elements of v are contained in the first m elements of w
 {
-	var idx:= 0;
+	var idx:nat := 0;
 	var vn := v[0..n];
 	var wm := w[0..m];
 	b := true;
-	while(idx<|vn|)
-	decreases |vn| - idx;
+	while(idx<|vn| && b)
+	decreases |vn| - idx, b;
+	invariant idx <= |vn|
+	invariant b <==> forall k:nat :: k < idx ==> v[k] in w[..m]
 	{
-		if !(v[idx] in wm) {b:=false;}
+		b:=(v[idx] in wm);
 		idx := idx + 1;
 	}
 }
