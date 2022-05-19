@@ -49,6 +49,7 @@ DDM/
 *.properties
 *.iml
 *.lml
+*.html
 .idea/
 *ignore.zip
 *--ignore

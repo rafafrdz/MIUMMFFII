@@ -45,8 +45,12 @@ ensures b==allEqual(v[0..v.Length])
     while (i  <  v.Length && b) 
     decreases v.Length - i, b;
     invariant i <= v.Length
+    invariant b <==> forall k:nat :: k < i  ==> v[k] == v[0];
+    /*
+    Instead of
     invariant forall k:nat :: k < i && b==true ==> v[k] == v[0];
     invariant !b ==> exists k: nat :: k < v.Length && v[k] != v[0];
+    */
 	  { 
        b:=(v[i]==v[0]);
        i := i+1;
