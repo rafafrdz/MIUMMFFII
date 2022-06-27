@@ -1,0 +1,11 @@
+La condición 1 podría omitirse, podría permitirse solape entre arcos normales 
+y transfers, aunque entonces se tendría que redefinir el marcaje resultante 
+tras el disparo.
+
+(APLICADO) Se exige que haya tokens en el origen de un transfer, esto no es 
+necesario en la definición estándar.
+
+(APLICADO) Cuidado con lugares que sean precondición y postcondición a la vez,
+en esos no tiene que cambiar el número de tokens.
+
+(APLICADO) La versión de monotonía era la estricta, no la más fuerte.

@@ -1,0 +1,71 @@
+PLACE 
+  p1l2, p1l3, p1l4, p1l5, 
+  p2l2, p2l3, p2l4, p2l5, p2l7, p2l8, 
+  xtrue, xfalse, ytrue, yfalse; 
+
+MARKING p1l2: 1, p2l2: 1, xfalse: 1, yfalse: 1; 
+
+TRANSITION t1
+CONSUME xtrue: 1, p1l2: 1;
+PRODUCE xtrue: 1, p1l3: 1;
+
+TRANSITION t2
+CONSUME xfalse: 1, p1l2: 1;
+PRODUCE xtrue: 1, p1l3: 1; 
+
+TRANSITION t3
+CONSUME yfalse: 1, p1l3: 1;
+PRODUCE yfalse: 1, p1l4: 1;
+
+TRANSITION t4
+CONSUME p1l4: 1;
+PRODUCE p1l5: 1; 
+
+TRANSITION t5
+CONSUME xfalse: 1, p1l5: 1;
+PRODUCE xfalse: 1, p1l2: 1; 
+
+TRANSITION t6
+CONSUME xtrue: 1, p1l5: 1;
+PRODUCE xfalse: 1, p1l2: 1; 
+
+TRANSITION t7
+CONSUME ytrue: 1, p2l2: 1;
+PRODUCE ytrue: 1, p2l3: 1; 
+
+TRANSITION t8
+CONSUME yfalse: 1, p2l2: 1;
+PRODUCE ytrue: 1, p2l3: 1; 
+
+TRANSITION t9
+CONSUME xfalse: 1, p2l3: 1;
+PRODUCE xfalse: 1, p2l7: 1; 
+
+TRANSITION t10
+CONSUME p2l7: 1;
+PRODUCE p2l8: 1; 
+
+TRANSITION t11
+CONSUME yfalse: 1, p2l8: 1;
+PRODUCE yfalse: 1, p2l2: 1;
+
+TRANSITION t12
+CONSUME ytrue: 1, p2l8: 1;
+PRODUCE yfalse: 1, p2l2: 1;
+
+TRANSITION t13
+CONSUME xtrue: 1, p2l3: 1;
+PRODUCE xtrue: 1, p2l4: 1; 
+
+TRANSITION t14
+CONSUME yfalse: 1, p2l4: 1;
+PRODUCE yfalse: 1, p2l5: 1;
+
+TRANSITION t15
+CONSUME ytrue: 1, p2l4: 1;
+PRODUCE yfalse: 1, p2l5: 1;
+
+TRANSITION t16
+CONSUME xfalse: 1, p2l5: 1;
+PRODUCE xfalse: 1, p2l2: 1;
+
