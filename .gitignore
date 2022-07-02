@@ -54,6 +54,8 @@ DDM/
 *ignore.zip
 *--ignore*
 *.class
+*.bash_history
+*.vscode
 
 ## Build tool directories for auxiliary files
 # latexrun
