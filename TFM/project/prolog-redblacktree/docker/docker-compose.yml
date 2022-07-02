@@ -1,0 +1,14 @@
+services:
+  
+  prolog:
+    image: rafafrdz/swipl-prolog
+    ports:
+     - 8888:8888
+     - 8998:8998
+     - 22:22
+     - 26:26
+    stdin_open: true # docker run -i
+    tty: true        # docker run -t
+    volumes:
+    #  - ./root:/
+     - ./home:/root
